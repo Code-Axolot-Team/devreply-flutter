@@ -77,10 +77,24 @@ class DevReply {
   static Future<bool> handle(String url) async =>
       await _channel.invokeMethod<bool>('handle', {'url': url}) ?? false;
 
-  /// iOS: the APNs device token as hex (e.g. from firebase_messaging `getAPNSToken()`). DevReply never
-  /// asks for permission before the user writes; the chat offers it. Android push comes later.
-  static Future<void> registerPushToken(String hexToken) async {
-    if (defaultTargetPlatform != TargetPlatform.iOS) return;
-    await _channel.invokeMethod<void>('registerPushToken', {'token': hexToken});
+  /// The device's push token, so replies arrive as notifications. iOS: the APNs token as hex
+  /// (firebase_messaging `getAPNSToken()`). Android: the FCM token (firebase_messaging `getToken()`,
+  /// and `onTokenRefresh`). DevReply never asks for permission before the user writes; the chat offers it.
+  static Future<void> registerPushToken(String token) async {
+    if (defaultTargetPlatform != TargetPlatform.iOS && defaultTargetPlatform != TargetPlatform.android) return;
+    await _channel.invokeMethod<void>('registerPushToken', {'token': token});
+  }
+
+  /// Whether this push (firebase_messaging `RemoteMessage.data`) is one of DevReply's.
+  static bool isDevReplyPush(Map<String, dynamic> data) => data['devreply_conversation_id'] is String;
+
+  /// Android: shows DevReply's push (a reply from the team) as a notification; a tap opens that
+  /// conversation. Call it from `FirebaseMessaging.onMessage` and your `onBackgroundMessage` handler.
+  /// Returns false for any other message (handle those yourself), and on iOS, where DevReply shows its
+  /// pushes itself.
+  static Future<bool> handlePush(Map<String, dynamic> data) async {
+    if (defaultTargetPlatform != TargetPlatform.android || !isDevReplyPush(data)) return false;
+    final strings = data.map((k, v) => MapEntry(k, v?.toString() ?? ''));
+    return await _channel.invokeMethod<bool>('handlePush', {'data': strings}) ?? false;
   }
 }

@@ -52,6 +52,9 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
                 result(nil)
             case "handle":
                 result((args["url"] as? String).flatMap(URL.init(string:)).map { openLink($0) } ?? false)
+            case "handlePush":
+                // iOS shows DevReply's pushes itself (APNs).
+                result(false)
             case "registerPushToken":
                 if let hex = args["token"] as? String, let data = Self.data(hex: hex) { DevReply.registerPush(data) }
                 result(nil)

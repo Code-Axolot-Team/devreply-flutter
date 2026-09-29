@@ -82,8 +82,14 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
         val url = call.argument<String>("url")
         result.success(url != null && openLink(android.net.Uri.parse(url)))
       }
-      // Android push comes with FCM support in the SDK.
-      "registerPushToken" -> result.success(null)
+      "registerPushToken" -> {
+        call.argument<String>("token")?.let { DevReply.registerPush(context, it) }
+        result.success(null)
+      }
+      "handlePush" -> {
+        val data = call.argument<Map<String, String>>("data") ?: emptyMap()
+        result.success(DevReply.handlePush(context, data))
+      }
       else -> result.notImplemented()
     }
   }

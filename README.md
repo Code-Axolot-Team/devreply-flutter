@@ -55,8 +55,24 @@ as the deep link in the dashboard (the app → Settings). The plugin catches the
 swallows them first, pass them on with `DevReply.handle(url)`. With go_router and Flutter deep linking on, redirect
 `/devreply` to where the user already is.
 
-**Push (iOS):** pass the APNs device token as hex (e.g. firebase_messaging `getAPNSToken()`) with
-`DevReply.registerPushToken(token)`, and upload your APNs key in the dashboard. Android push comes later.
+**Push notifications**, like Intercom: your app keeps its firebase_messaging setup and passes DevReply the token
+and, on Android, DevReply's messages:
+
+```dart
+final token = Platform.isIOS
+    ? await FirebaseMessaging.instance.getAPNSToken()   // iOS: the APNs token
+    : await FirebaseMessaging.instance.getToken();      // Android: the FCM token
+if (token != null) await DevReply.registerPushToken(token);
+FirebaseMessaging.instance.onTokenRefresh.listen((t) { if (Platform.isAndroid) DevReply.registerPushToken(t); });
+
+// Android: DevReply shows its own notification; a tap opens the conversation.
+FirebaseMessaging.onMessage.listen((m) async { if (await DevReply.handlePush(m.data)) return; /* yours */ });
+// and first thing in your onBackgroundMessage handler:
+//   if (await DevReply.handlePush(message.data)) return;
+```
+
+Upload your push keys in the dashboard (the APNs key; the Firebase service account for Android). The chat asks
+for the notification permission only after the user's first message.
 
 ## How it's built
 

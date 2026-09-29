@@ -1,3 +1,10 @@
+## 0.4.2
+
+* Push notifications on Android, like Intercom: your app keeps its Firebase Cloud Messaging setup and passes
+  DevReply the FCM token (`DevReply.registerPushToken(token)`) and DevReply's messages
+  (`DevReply.handlePush(message.data)` from `onMessage` and `onBackgroundMessage`). The chat offers to turn
+  notifications on after the user's first message; a tap opens the conversation.
+
 ## 0.4.0
 
 * Replies show who wrote them: the teammate's name, title and photo, once per group of replies.
