@@ -61,6 +61,15 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
         DevReply.present(activity ?: context, DevReplyCategory.entries.firstOrNull { it.name.equals(category, ignoreCase = true) })
         result.success(null)
       }
+      "login" -> {
+        call.argument<String>("userId")?.let { DevReply.login(it) }
+        result.success(null)
+      }
+      "logout" -> {
+        DevReply.logout()
+        result.success(null)
+      }
+      "deleteUser" -> DevReply.deleteUser { ok -> result.success(ok) }
       "setUser" -> {
         DevReply.setUser(call.argument<String>("name"), call.argument<String>("email"))
         result.success(null)
@@ -85,6 +94,10 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
       "registerPushToken" -> {
         call.argument<String>("token")?.let { DevReply.registerPush(context, it) }
         result.success(null)
+      }
+      "handleNotificationOpened" -> {
+        val data = call.argument<Map<String, String>>("data") ?: emptyMap()
+        result.success(DevReply.handleNotificationOpened(activity ?: context, data))
       }
       "handlePush" -> {
         val data = call.argument<Map<String, String>>("data") ?: emptyMap()

@@ -77,6 +77,18 @@ class DevReply {
   static Future<bool> handle(String url) async =>
       await _channel.invokeMethod<bool>('handle', {'url': url}) ?? false;
 
+  /// After your user signs in: your own id for them (never an email or a secret). The team sees it next
+  /// to the user, and your backend can delete the user by it. If someone else was signed in on this
+  /// device, DevReply logs them out first, so nobody sees someone else's chats.
+  static Future<void> login(String userId) => _channel.invokeMethod<void>('login', {'userId': userId});
+
+  /// When your user signs out: DevReply forgets this device's chats; the next person starts empty.
+  static Future<void> logout() => _channel.invokeMethod<void>('logout');
+
+  /// When your user deletes their account: deletes their name, email, attributes, conversations,
+  /// messages and files from DevReply, then logs out. False if DevReply couldn't be reached.
+  static Future<bool> deleteUser() async => await _channel.invokeMethod<bool>('deleteUser') ?? false;
+
   /// The device's push token, so replies arrive as notifications. iOS: the APNs token as hex
   /// (firebase_messaging `getAPNSToken()`). Android: the FCM token (firebase_messaging `getToken()`,
   /// and `onTokenRefresh`). DevReply never asks for permission before the user writes; the chat offers it.
@@ -87,6 +99,20 @@ class DevReply {
 
   /// Whether this push (firebase_messaging `RemoteMessage.data`) is one of DevReply's.
   static bool isDevReplyPush(Map<String, dynamic> data) => data['devreply_conversation_id'] is String;
+
+  /// The user tapped a notification: pass its data (firebase_messaging `RemoteMessage.data` from
+  /// `onMessageOpenedApp` and `getInitialMessage()`), and DevReply opens the conversation when it's one of
+  /// DevReply's. Returns false for the app's own. Your push library owns notifications; DevReply only
+  /// answers "is this mine?". On Android, DevReply's own notifications (from [handlePush]) open the
+  /// conversation by themselves.
+  static Future<bool> handleNotificationOpened(Map<String, dynamic> data) async {
+    if (!isDevReplyPush(data)) return false;
+    final strings = <String, String>{
+      for (final e in data.entries)
+        if (e.value is String) e.key: e.value as String,
+    };
+    return await _channel.invokeMethod<bool>('handleNotificationOpened', {'data': strings}) ?? false;
+  }
 
   /// Android: shows DevReply's push (a reply from the team) as a notification; a tap opens that
   /// conversation. Call it from `FirebaseMessaging.onMessage` and your `onBackgroundMessage` handler.

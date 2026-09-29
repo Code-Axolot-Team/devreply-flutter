@@ -1,3 +1,14 @@
+## 0.4.3
+
+* Signed-in users: `DevReply.login(userId)` after sign-in (your own id for the user; the team sees it, your
+  backend can delete the user by it), `DevReply.logout()` on every sign-out (the device forgets the chat; the
+  next person starts empty), `DevReply.deleteUser()` in your delete-account flow (deletes the user's data, then
+  logs out; `false` if DevReply couldn't be reached).
+* Notification taps from firebase_messaging: `DevReply.handleNotificationOpened(message.data)` from
+  `onMessageOpenedApp` and `getInitialMessage()` opens the conversation (`false` for your own). DevReply never
+  takes over your notification handling.
+* iOS: a reinstall starts clean (the Keychain outlives the app).
+
 ## 0.4.2
 
 * Push notifications on Android, like Intercom: your app keeps its Firebase Cloud Messaging setup and passes

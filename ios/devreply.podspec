@@ -2,7 +2,7 @@
 # tool/sync_ios_sdk.dart), plus the Flutter bridge. No CocoaPods trunk dependency. Needs iOS 17.
 Pod::Spec.new do |s|
   s.name             = 'devreply'
-  s.version          = '0.4.2'
+  s.version          = '0.4.3'
   s.summary          = "DevReply for Flutter: the native in-app chat between your app's users and you."
   s.homepage         = 'https://github.com/Code-Axolot-Team/devreply-flutter'
   s.license          = { :file => '../LICENSE' }

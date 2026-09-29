@@ -69,10 +69,46 @@ FirebaseMessaging.instance.onTokenRefresh.listen((t) { if (Platform.isAndroid) D
 FirebaseMessaging.onMessage.listen((m) async { if (await DevReply.handlePush(m.data)) return; /* yours */ });
 // and first thing in your onBackgroundMessage handler:
 //   if (await DevReply.handlePush(message.data)) return;
+
+// Taps (iOS, and Android notifications firebase_messaging shows), including the one that launched the app.
+FirebaseMessaging.onMessageOpenedApp.listen((m) async { if (await DevReply.handleNotificationOpened(m.data)) return; /* yours */ });
+final initial = await FirebaseMessaging.instance.getInitialMessage();
+if (initial != null) await DevReply.handleNotificationOpened(initial.data);
 ```
+
+DevReply never takes over your notification handling; `handleNotificationOpened` returns false for your own
+notifications. The dashboard's push card shows "✓ Taps open the chat" once a tap opened a conversation.
 
 Upload your push keys in the dashboard (the APNs key; the Firebase service account for Android). The chat asks
 for the notification permission only after the user's first message.
+
+## Sign-in, sign-out and account deletion
+
+If your app has accounts:
+
+```dart
+await DevReply.login(user.id);               // after sign-in: your own id for the user, never an email or a secret
+await DevReply.logout();                     // on every sign-out and account switch
+final ok = await DevReply.deleteUser();      // in your delete-account flow; false if DevReply couldn't be reached
+```
+
+- `login` labels the user for your team (the dashboard shows it as "User ID (your app)") and lets your backend
+  delete them by it. It doesn't merge chats across devices: the id isn't verified, so it never gives one device
+  another's conversations. If another id was signed in on this device, DevReply logs out first.
+- `logout` revokes this install and its push token; the device forgets the chat and the next person starts empty.
+  The conversations stay with your team.
+- `deleteUser` deletes the user's name, email, attributes, conversations, messages and files, then logs out.
+  Apple requires account deletion in the app.
+
+Your backend can delete a user too, with a read-and-write secret key (never in an app):
+
+```sh
+curl -X DELETE "https://api.devreply.com/v1/project/users?user_id=<your id>" \
+  -H "Authorization: Bearer $DEVREPLY_SECRET_KEY"
+# {"deleted": 1}: every DevReply user with that id, on every device. ?id=<DevReply's user id> for one user.
+```
+
+Your team can also delete a user in the dashboard (the inbox's user panel → Delete user).
 
 ## How it's built
 

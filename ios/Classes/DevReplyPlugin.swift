@@ -47,11 +47,21 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
             case "setShowsUnreadBubble":
                 DevReply.showsUnreadBubble = args["shows"] as? Bool ?? true
                 result(nil)
+            case "login":
+                if let id = args["userId"] as? String { DevReply.login(userID: id) }
+                result(nil)
+            case "logout":
+                DevReply.logout()
+                result(nil)
+            case "deleteUser":
+                Task { @MainActor in result(await DevReply.deleteUser()) }
             case "setLocale":
                 DevReply.setLocale(args["tag"] as? String)
                 result(nil)
             case "handle":
                 result((args["url"] as? String).flatMap(URL.init(string:)).map { openLink($0) } ?? false)
+            case "handleNotificationOpened":
+                result(DevReply.handleNotificationOpened(userInfo: args["data"] as? [String: Any] ?? [:]))
             case "handlePush":
                 // iOS shows DevReply's pushes itself (APNs).
                 result(false)
