@@ -1,0 +1,63 @@
+# The Flutter example against the live API: the Dart buttons open the native chat, a message goes
+# out, the team's reply (sent by a test script as "Founder reply <NONCE>") comes back as the native
+# unread bubble and as the Dart unread count. Build with a throwaway app's keys: --dart-define=DEVREPLY_IOS_KEY=pk_… --dart-define=DEVREPLY_ANDROID_KEY=pk_…
+#   maestro test -e NONCE=123 maestro/chat.yaml     (with the reply script running)
+appId: com.devreply.devreplyExample
+---
+- launchApp:
+    clearState: true
+    clearKeychain: true
+- extendedWaitUntil:
+    visible: "Talk to the developer."
+    timeout: 20000
+- takeScreenshot: flutter-1-app
+- tapOn: "Message the developer"
+- extendedWaitUntil:
+    visible: "Question"
+    timeout: 20000
+- takeScreenshot: flutter-2-home
+- tapOn: "Question"
+- tapOn:
+    id: "devreply.profile.name"
+- inputText: "Flutter Tester"
+- tapOn:
+    id: "devreply.profile.save"
+- tapOn:
+    id: "devreply.composer"
+- inputText: "Bubble test ${NONCE}"
+- tapOn:
+    id: "devreply.send"
+- extendedWaitUntil:
+    visible: "Thanks, we got it!"
+    timeout: 15000
+- takeScreenshot: flutter-3-sent
+- tapOn:
+    id: "devreply.emailask.skip"
+    optional: true
+- tapOn:
+    id: "devreply.push.notnow"
+    optional: true
+- tapOn:
+    id: "devreply.back"
+    optional: true
+- tapOn:
+    text: "Back"
+    optional: true
+- tapOn:
+    text: "Close"
+    optional: true
+- extendedWaitUntil:
+    visible: "Talk to the developer."
+    timeout: 10000
+- extendedWaitUntil:
+    visible:
+      id: "devreply.bubble"
+    timeout: 120000
+- assertVisible: "Unread: 1"
+- takeScreenshot: flutter-4-bubble
+- tapOn:
+    id: "devreply.bubble"
+- extendedWaitUntil:
+    visible: "Founder reply ${NONCE}"
+    timeout: 20000
+- takeScreenshot: flutter-5-reply
