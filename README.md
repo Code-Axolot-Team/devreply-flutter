@@ -42,6 +42,41 @@ DevReply.unreadCountChanges.listen((count) => setState(() => unread = count));
 DevReply.setShowsUnreadBubble(false);        // if you show the count yourself
 ```
 
+**A draft and context:** open a new conversation with text already in the composer (the user sees it and sends
+it; nothing is sent on its own) and context for your team, shown with that conversation only as "Opened with"
+(text, number or true/false, up to 20):
+
+```dart
+await DevReply.present(DevReplyCategory.billing, const DevReplyPresentOptions(
+  message: "My purchase didn't go through",
+  attributes: {'source': 'paywall', 'rc_error_code': 'PURCHASE_NOT_ALLOWED'},
+));
+```
+
+**Switched off in the dashboard:** `present` returns `false` and shows nothing, and the unread bubble hides.
+`await DevReply.isAvailable` tells you up front, to hide your own "Message us" button.
+
+**Events** for your analytics:
+
+```dart
+final sub = DevReply.events.listen((e) {
+  // e.type: messengerOpened, messengerClosed, conversationStarted (conversationId, category), messageSent (conversationId)
+  if (e.type == 'conversationStarted') analytics.log('support_started', e.category?.name);
+});
+sub.cancel();   // when you no longer need them
+```
+
+**Colours and dark mode:** six colours, for light and dark: `primary` (header and highlights), `accent` (buttons
+that act), `userBubble`, `userBubbleText`, `background` and `ink` (text). DevReply derives the rest and keeps its
+own line widths, shadows, fonts and icons. Dark mode is off by default (the chat stays light); when on, the chat
+follows the device's appearance.
+
+```dart
+await DevReply.setLightTheme(const DevReplyColors(primary: Color(0xFF0A84FF), accent: Color(0xFFFF9F0A)));
+await DevReply.setDarkTheme(DevReplyColors.devReplyDark);   // DevReply's "Deep blue", or DevReplyColors(...) of your own
+await DevReply.setDarkTheme(null);                          // dark off again
+```
+
 **Languages:** the chat follows the device's language (15 languages); `DevReply.setLocale('es')` if your app has its
 own language setting (`null` follows the device).
 
@@ -79,7 +114,8 @@ if (initial != null) await DevReply.handleNotificationOpened(initial.data);
 DevReply never takes over your notification handling; `handleNotificationOpened` returns false for your own
 notifications. The dashboard's push card shows "✓ Taps open the chat" once a tap opened a conversation.
 
-Upload your push keys in the dashboard (the APNs key; the Firebase service account for Android). The chat asks
+Upload your push keys in the dashboard (the APNs key; the Firebase service account for Android), or let your
+coding agent do it with DevReply's MCP tools `set_ios_push_key` and `set_android_push_key`. The chat asks
 for the notification permission only after the user's first message.
 
 ## Sign-in, sign-out and account deletion
@@ -89,7 +125,7 @@ If your app has accounts:
 ```dart
 await DevReply.login(user.id);               // after sign-in: your own id for the user, never an email or a secret
 await DevReply.logout();                     // on every sign-out and account switch
-final ok = await DevReply.deleteUser();      // in your delete-account flow; false if DevReply couldn't be reached
+final ok = await DevReply.deleteUser();      // in your delete-account flow; false = queued, retried until done
 ```
 
 - `login` labels the user for your team (the dashboard shows it as "User ID (your app)") and lets your backend
@@ -98,7 +134,9 @@ final ok = await DevReply.deleteUser();      // in your delete-account flow; fal
 - `logout` revokes this install and its push token; the device forgets the chat and the next person starts empty.
   The conversations stay with your team.
 - `deleteUser` deletes the user's name, email, attributes, conversations, messages and files, then logs out.
-  Apple requires account deletion in the app.
+  Apple requires account deletion in the app. It never gives up: if DevReply can't be reached, the device forgets
+  the user at once and returns `false`, and the deletion is retried at the next launches until the server
+  confirms. `true` = deleted now.
 
 Your backend can delete a user too, with a read-and-write secret key (never in an app):
 

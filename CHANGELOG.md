@@ -1,3 +1,16 @@
+## 0.4.4
+
+* `DevReply.present(category, DevReplyPresentOptions(message: …, attributes: {…}))`: prefills the new
+  conversation's message and attaches context the team sees on that conversation. Returns false when the
+  chat is switched off.
+* `DevReply.isAvailable`: false when the team switched the chat off in the dashboard.
+* `DevReply.events`: messengerOpened, messengerClosed, conversationStarted, messageSent.
+* `DevReply.setLightTheme(DevReplyColors(...))` and `DevReply.setDarkTheme(...)`: the chat's six colours.
+  Dark mode is off by default; `DevReplyColors.devReplyDark` is DevReply's deep-blue theme, `null` turns it
+  off. DevReply derives the rest and keeps its own line widths and icons.
+* `deleteUser()` never gives up: if DevReply can't be reached, the device forgets the user now and the
+  deletion is retried at the next launches (false = queued).
+
 ## 0.4.3
 
 * Signed-in users: `DevReply.login(userId)` after sign-in (your own id for the user; the team sees it, your

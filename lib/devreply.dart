@@ -13,12 +13,101 @@ import 'package:flutter/services.dart';
 /// What a conversation is about. Set by the start button the user picked.
 enum DevReplyCategory { bug, billing, idea, question, other }
 
+/// Extra context for [DevReply.present]: a prefilled first message, and values the team sees on that
+/// conversation only (where it was opened, an error code…).
+class DevReplyPresentOptions {
+  const DevReplyPresentOptions({this.message, this.attributes = const {}});
+
+  /// Prefills the composer of the new conversation (the user sees it and sends it).
+  final String? message;
+
+  /// Text, numbers or true/false, e.g. `{'source': 'paywall', 'rc_error_code': 'PURCHASE_NOT_ALLOWED'}`.
+  final Map<String, Object> attributes;
+}
+
+/// The chat's colours; any left out keep DevReply's own. DevReply works out the rest (cards, secondary
+/// text, outlines, text on colour) and keeps its own line widths.
+class DevReplyColors {
+  const DevReplyColors({this.primary, this.accent, this.userBubble, this.userBubbleText, this.background, this.ink})
+      : _preset = false;
+  const DevReplyColors._preset()
+      : primary = null,
+        accent = null,
+        userBubble = null,
+        userBubbleText = null,
+        background = null,
+        ink = null,
+        _preset = true;
+
+  /// DevReply's own dark theme ("Deep blue"), for [DevReply.setDarkTheme].
+  static const DevReplyColors devReplyDark = DevReplyColors._preset();
+
+  /// The header and the brand highlight.
+  final Color? primary;
+
+  /// Buttons that act: send, start, save.
+  final Color? accent;
+
+  /// The user's own message bubbles, and their text.
+  final Color? userBubble;
+  final Color? userBubbleText;
+
+  /// The page, and the text on it.
+  final Color? background;
+  final Color? ink;
+  final bool _preset;
+
+  Map<String, String> _hex() => {
+        for (final e in {
+          'primary': primary,
+          'accent': accent,
+          'userBubble': userBubble,
+          'userBubbleText': userBubbleText,
+          'background': background,
+          'ink': ink,
+        }.entries)
+          if (e.value != null) e.key: _toHex(e.value!),
+      };
+
+  static String _toHex(Color c) {
+    // ARGB as one int: works on every Flutter this plugin supports (3.19+).
+    // ignore: deprecated_member_use
+    final v = c.value;
+    String h(int x) => x.toRadixString(16).padLeft(2, '0');
+    return '#${h((v >> 16) & 0xFF)}${h((v >> 8) & 0xFF)}${h(v & 0xFF)}${h((v >> 24) & 0xFF)}';
+  }
+}
+
+/// What happened in the chat, for analytics ([DevReply.events]).
+class DevReplyEvent {
+  const DevReplyEvent._(this.type, this.conversationId, this.category);
+
+  /// `messengerOpened`, `messengerClosed`, `conversationStarted` or `messageSent`.
+  final String type;
+  final String? conversationId;
+  final DevReplyCategory? category;
+
+  static DevReplyEvent _from(Object? raw) {
+    final m = (raw as Map?) ?? const {};
+    final category = m['category'] as String?;
+    return DevReplyEvent._(
+      m['type'] as String? ?? '',
+      m['conversationId'] as String?,
+      category == null ? null : DevReplyCategory.values.where((c) => c.name == category).firstOrNull,
+    );
+  }
+
+  @override
+  String toString() => 'DevReplyEvent($type${conversationId == null ? '' : ', $conversationId'})';
+}
+
 /// The DevReply chat. All methods are static.
 class DevReply {
   DevReply._();
 
   static const MethodChannel _channel = MethodChannel('devreply');
   static const EventChannel _unread = EventChannel('devreply/unread');
+  static const EventChannel _events = EventChannel('devreply/events');
 
   /// Once, at startup, with the app's public keys from the DevReply dashboard (Settings → Platforms),
   /// one per platform. They're safe to ship. Never a secret key (`sk_…`).
@@ -36,8 +125,39 @@ class DevReply {
   }
 
   /// Opens the chat over the current screen. With a category, straight into a new conversation.
-  static Future<void> present([DevReplyCategory? category]) =>
-      _channel.invokeMethod<void>('present', {'category': category?.name});
+  /// [options] prefills that conversation's message and attaches context for the team. Returns false
+  /// when the chat is switched off in the dashboard (or DevReply isn't configured): nothing opens.
+  ///
+  /// ```dart
+  /// DevReply.present(DevReplyCategory.billing,
+  ///     const DevReplyPresentOptions(message: "My purchase didn't go through", attributes: {'source': 'paywall'}));
+  /// ```
+  static Future<bool> present([DevReplyCategory? category, DevReplyPresentOptions? options]) async =>
+      await _channel.invokeMethod<bool>('present', {
+        'category': category?.name,
+        'message': options?.message,
+        'attributes': options?.attributes ?? const <String, Object>{},
+      }) ??
+      false;
+
+  /// False when the team switched the chat off in the dashboard: hide your own "Message us" buttons.
+  static Future<bool> get isAvailable async => await _channel.invokeMethod<bool>('isAvailable') ?? false;
+
+  /// The chat's light colours. `null` goes back to DevReply's own.
+  static Future<void> setLightTheme(DevReplyColors? colors) => _channel.invokeMethod<void>(
+      'setTheme', {'lightMode': colors == null ? 'reset' : 'custom', 'light': colors?._hex(), 'darkMode': 'keep'});
+
+  /// Dark mode is off by default (the chat stays light). Pass [DevReplyColors.devReplyDark] for
+  /// DevReply's dark theme, your own colours for yours, or `null` to turn it off again.
+  static Future<void> setDarkTheme(DevReplyColors? colors) => _channel.invokeMethod<void>('setTheme', {
+        'lightMode': 'keep',
+        'darkMode': colors == null ? 'off' : (colors._preset ? 'default' : 'custom'),
+        'dark': colors == null || colors._preset ? null : colors._hex(),
+      });
+
+  /// What happens in the chat (opened, closed, conversation started, message sent), e.g. to measure which
+  /// button brings conversations.
+  static Stream<DevReplyEvent> get events => _events.receiveBroadcastStream().map(DevReplyEvent._from);
 
   /// Who the user is, if the app knows. With a name set, the chat doesn't ask for one.
   static Future<void> setUser({String? name, String? email}) =>

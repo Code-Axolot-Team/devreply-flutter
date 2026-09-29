@@ -23,6 +23,9 @@ import kotlinx.coroutines.launch
 class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware, EventChannel.StreamHandler {
   private lateinit var channel: MethodChannel
   private lateinit var events: EventChannel
+  private lateinit var chatEvents: EventChannel
+  private var eventSink: EventChannel.EventSink? = null
+  private var eventSubscription: com.devreply.sdk.DevReplySubscription? = null
   private lateinit var context: Context
   private var activity: Activity? = null
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -36,11 +39,56 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
     context = binding.applicationContext
     channel = MethodChannel(binding.binaryMessenger, "devreply").also { it.setMethodCallHandler(this) }
     events = EventChannel(binding.binaryMessenger, "devreply/unread").also { it.setStreamHandler(this) }
+    // What happens in the chat, for the app's analytics.
+    chatEvents = EventChannel(binding.binaryMessenger, "devreply/events").also {
+      it.setStreamHandler(object : EventChannel.StreamHandler {
+        override fun onListen(arguments: Any?, sink: EventChannel.EventSink?) {
+          eventSink = sink
+          if (eventSubscription == null) eventSubscription = DevReply.addEventListener { e -> eventSink?.success(eventMap(e)) }
+        }
+        override fun onCancel(arguments: Any?) {
+          eventSink = null
+        }
+      })
+    }
+  }
+
+  private fun eventMap(e: com.devreply.sdk.DevReplyEvent): Map<String, Any?> = when (e) {
+    is com.devreply.sdk.DevReplyEvent.MessengerOpened -> mapOf("type" to "messengerOpened")
+    is com.devreply.sdk.DevReplyEvent.MessengerClosed -> mapOf("type" to "messengerClosed")
+    is com.devreply.sdk.DevReplyEvent.ConversationStarted ->
+      mapOf("type" to "conversationStarted", "conversationId" to e.conversationId, "category" to e.category?.name?.lowercase())
+    is com.devreply.sdk.DevReplyEvent.MessageSent -> mapOf("type" to "messageSent", "conversationId" to e.conversationId)
+  }
+
+  private fun theme(colors: Map<String, String>?, base: com.devreply.sdk.DevReplyTheme): com.devreply.sdk.DevReplyTheme {
+    fun c(key: String): androidx.compose.ui.graphics.Color? = colors?.get(key)?.let(::parseHex)
+    return base.copy(
+      primary = c("primary") ?: base.primary,
+      accent = c("accent") ?: base.accent,
+      userBubble = c("userBubble") ?: base.userBubble,
+      userBubbleText = c("userBubbleText") ?: base.userBubbleText,
+      background = c("background") ?: base.background,
+      ink = c("ink") ?: base.ink,
+    )
+  }
+
+  /** `#RRGGBBAA` (from Dart) or `#RRGGBB`. */
+  private fun parseHex(hex: String): androidx.compose.ui.graphics.Color? {
+    val clean = hex.trim().removePrefix("#")
+    val v = clean.toLongOrNull(16) ?: return null
+    return when (clean.length) {
+      6 -> androidx.compose.ui.graphics.Color(0xFF000000 or v)
+      8 -> androidx.compose.ui.graphics.Color(((v and 0xFF) shl 24) or (v ushr 8))
+      else -> null
+    }
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     channel.setMethodCallHandler(null)
     events.setStreamHandler(null)
+    chatEvents.setStreamHandler(null)
+    eventSubscription?.cancel()
     scope.cancel()
   }
 
@@ -58,7 +106,27 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
       }
       "present" -> {
         val category = call.argument<String>("category")
-        DevReply.present(activity ?: context, DevReplyCategory.entries.firstOrNull { it.name.equals(category, ignoreCase = true) })
+        val attributes = call.argument<Map<String, Any>>("attributes") ?: emptyMap()
+        result.success(
+          DevReply.present(
+            activity ?: context,
+            DevReplyCategory.entries.firstOrNull { it.name.equals(category, ignoreCase = true) },
+            call.argument<String>("message"),
+            attributes,
+          ),
+        )
+      }
+      "isAvailable" -> result.success(DevReply.isAvailable)
+      "setTheme" -> {
+        when (call.argument<String>("lightMode")) {
+          "reset" -> DevReply.theme = com.devreply.sdk.DevReplyTheme()
+          "custom" -> DevReply.theme = theme(call.argument("light"), com.devreply.sdk.DevReplyTheme())
+        }
+        when (call.argument<String>("darkMode")) {
+          "off" -> DevReply.darkTheme = null
+          "default" -> DevReply.darkTheme = com.devreply.sdk.DevReplyTheme.Dark
+          "custom" -> DevReply.darkTheme = theme(call.argument("dark"), com.devreply.sdk.DevReplyTheme.Dark)
+        }
         result.success(null)
       }
       "login" -> {

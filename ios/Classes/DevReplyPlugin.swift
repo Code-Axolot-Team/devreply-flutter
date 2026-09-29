@@ -1,4 +1,5 @@
 import Flutter
+import SwiftUI
 import UIKit
 
 /// The Flutter bridge: every call goes to the native DevReply SDK (compiled into this pod from
@@ -17,7 +18,33 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
         // The button in DevReply's emails opens the app with `yourapp://devreply?devreply=<id>`.
         registrar.addApplicationDelegate(instance)
         FlutterEventChannel(name: "devreply/unread", binaryMessenger: registrar.messenger()).setStreamHandler(instance)
+        FlutterEventChannel(name: "devreply/events", binaryMessenger: registrar.messenger()).setStreamHandler(instance.chatEvents)
     }
+
+    /// What happens in the chat, for the app's analytics.
+    private let chatEvents = ChatEvents()
+
+    private static func theme(_ colors: [String: String]?, base: DevReplyTheme) -> DevReplyTheme {
+        var t = base
+        let c = { (key: String) in colors?[key].flatMap(color(hex:)) }
+        if let v = c("primary") { t.primary = v }
+        if let v = c("accent") { t.accent = v }
+        if let v = c("userBubble") { t.userBubble = v }
+        if let v = c("userBubbleText") { t.userBubbleText = v }
+        if let v = c("background") { t.background = v }
+        if let v = c("ink") { t.ink = v }
+        return t
+    }
+
+    /// `#RRGGBBAA` (from Dart) or `#RRGGBB`.
+    private static func color(hex: String) -> Color? {
+        let clean = hex.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "#", with: "")
+        guard clean.count == 6 || clean.count == 8, let v = UInt64(clean, radix: 16) else { return nil }
+        let rgba = clean.count == 6 ? (v << 8) | 0xFF : v
+        return Color(.sRGB, red: Double((rgba >> 24) & 0xFF) / 255, green: Double((rgba >> 16) & 0xFF) / 255,
+                     blue: Double((rgba >> 8) & 0xFF) / 255, opacity: Double(rgba & 0xFF) / 255)
+    }
+
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any] ?? [:]
@@ -32,7 +59,29 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
                 pendingLink = nil
                 result(nil)
             case "present":
-                DevReply.present(category: (args["category"] as? String).flatMap(DevReplyCategory.init(rawValue:)))
+                var attributes: [String: DevReplyAttribute] = [:]
+                for (k, v) in args["attributes"] as? [String: Any] ?? [:] {
+                    if let a = Self.attribute(v) { attributes[k] = a }
+                }
+                result(DevReply.present(
+                    category: (args["category"] as? String).flatMap(DevReplyCategory.init(rawValue:)),
+                    message: args["message"] as? String,
+                    attributes: attributes
+                ))
+            case "isAvailable":
+                result(DevReply.isAvailable)
+            case "setTheme":
+                switch args["lightMode"] as? String {
+                case "reset": DevReply.theme = .light
+                case "custom": DevReply.theme = Self.theme(args["light"] as? [String: String], base: .light)
+                default: break
+                }
+                switch args["darkMode"] as? String {
+                case "off": DevReply.darkTheme = nil
+                case "default": DevReply.darkTheme = .dark
+                case "custom": DevReply.darkTheme = Self.theme(args["dark"] as? [String: String], base: .dark)
+                default: break
+                }
                 result(nil)
             case "setUser":
                 DevReply.setUser(name: args["name"] as? String, email: args["email"] as? String)
@@ -150,5 +199,34 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
             index = next
         }
         return data
+    }
+}
+
+/// The chat's events for Dart (`DevReply.events`).
+final class ChatEvents: NSObject, FlutterStreamHandler {
+    private var sink: FlutterEventSink?
+    private var subscription: DevReplySubscription?
+
+    func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+        sink = events
+        MainActor.assumeIsolated {
+            guard subscription == nil else { return }
+            subscription = DevReply.addEventListener { [weak self] event in
+                switch event {
+                case .messengerOpened: self?.sink?(["type": "messengerOpened"])
+                case .messengerClosed: self?.sink?(["type": "messengerClosed"])
+                case let .conversationStarted(id, category):
+                    self?.sink?(["type": "conversationStarted", "conversationId": id.uuidString.lowercased(),
+                                 "category": category?.rawValue as Any])
+                case let .messageSent(id): self?.sink?(["type": "messageSent", "conversationId": id.uuidString.lowercased()])
+                }
+            }
+        }
+        return nil
+    }
+
+    func onCancel(withArguments arguments: Any?) -> FlutterError? {
+        sink = nil
+        return nil
     }
 }
