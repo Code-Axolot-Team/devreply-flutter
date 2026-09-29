@@ -42,6 +42,19 @@ DevReply.unreadCountChanges.listen((count) => setState(() => unread = count));
 DevReply.setShowsUnreadBubble(false);        // if you show the count yourself
 ```
 
+**Languages:** the chat follows the device's language (15 languages); `DevReply.setLocale('es')` if your app has its
+own language setting (`null` follows the device).
+
+**Who replied:** each reply shows the teammate's name, title and photo (their persona in the dashboard), and the
+chat's header shows your app icon. Nothing to set up in the app.
+
+**Replies from email:** DevReply emails users replies they haven't read, with a "Reply in the app" button that opens
+`yourapp://devreply?devreply=<conversation>`. Add the scheme (iOS `CFBundleURLTypes` in `Info.plist`; Android a `VIEW`
+intent filter with `android:scheme="yourapp" android:host="devreply"` on `MainActivity`) and set `yourapp://devreply`
+as the deep link in the dashboard (the app → Settings). The plugin catches these links itself; if a links package
+swallows them first, pass them on with `DevReply.handle(url)`. With go_router and Flutter deep linking on, redirect
+`/devreply` to where the user already is.
+
 **Push (iOS):** pass the APNs device token as hex (e.g. firebase_messaging `getAPNSToken()`) with
 `DevReply.registerPushToken(token)`, and upload your APNs key in the dashboard. Android push comes later.
 

@@ -6,11 +6,16 @@ import UIKit
 public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler {
     private var sink: FlutterEventSink?
     private var observing = false
+    private var configured = false
+    /// A DevReply link that opened the app before Dart called configure.
+    private var pendingLink: URL?
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = DevReplyPlugin()
         let channel = FlutterMethodChannel(name: "devreply", binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(instance, channel: channel)
+        // The button in DevReply's emails opens the app with `yourapp://devreply?devreply=<id>`.
+        registrar.addApplicationDelegate(instance)
         FlutterEventChannel(name: "devreply/unread", binaryMessenger: registrar.messenger()).setStreamHandler(instance)
     }
 
@@ -21,7 +26,10 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
             case "configure":
                 guard let key = args["key"] as? String else { return result(FlutterError(code: "key", message: "a public key is required", details: nil)) }
                 DevReply.configure(key)
+                configured = true
                 observeUnread()
+                if let link = pendingLink { _ = DevReply.handle(link) }
+                pendingLink = nil
                 result(nil)
             case "present":
                 DevReply.present(category: (args["category"] as? String).flatMap(DevReplyCategory.init(rawValue:)))
@@ -39,6 +47,11 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
             case "setShowsUnreadBubble":
                 DevReply.showsUnreadBubble = args["shows"] as? Bool ?? true
                 result(nil)
+            case "setLocale":
+                DevReply.setLocale(args["tag"] as? String)
+                result(nil)
+            case "handle":
+                result((args["url"] as? String).flatMap(URL.init(string:)).map { openLink($0) } ?? false)
             case "registerPushToken":
                 if let hex = args["token"] as? String, let data = Self.data(hex: hex) { DevReply.registerPush(data) }
                 result(nil)
@@ -46,6 +59,30 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
                 result(FlutterMethodNotImplemented)
             }
         }
+    }
+
+    // MARK: DevReply links
+
+    /// Opens the conversation a DevReply link points to; false for any other URL.
+    @MainActor
+    private func openLink(_ url: URL) -> Bool {
+        let id = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?.first { $0.name == "devreply" }?.value
+        guard let id, UUID(uuidString: id) != nil else { return false }
+        if configured { _ = DevReply.handle(url) } else { pendingLink = url }
+        return true
+    }
+
+    public func application(_ application: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+        MainActor.assumeIsolated { openLink(url) }
+    }
+
+    public func application(
+        _ application: UIApplication,
+        continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([Any]) -> Void
+    ) -> Bool {
+        guard let url = userActivity.webpageURL else { return false }
+        return MainActor.assumeIsolated { openLink(url) }
     }
 
     // MARK: Unread count stream

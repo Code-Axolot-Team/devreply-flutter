@@ -28,6 +28,9 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
   private var sink: EventChannel.EventSink? = null
   private var watching: Job? = null
+  private var configured = false
+  /** A DevReply link that opened the app before Dart called configure. */
+  private var pendingLink: android.net.Uri? = null
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
     context = binding.applicationContext
@@ -47,7 +50,10 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
         val key = call.argument<String>("key") ?: return result.error("key", "a public key is required", null)
         // The current screen if there is one: the unread bubble then shows on it straight away.
         DevReply.configure(activity ?: context, key)
+        configured = true
         watchUnread()
+        pendingLink?.let { DevReply.handle(activity ?: context, it) }
+        pendingLink = null
         result.success(null)
       }
       "present" -> {
@@ -67,6 +73,14 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
       "setShowsUnreadBubble" -> {
         DevReply.showsUnreadBubble = call.argument<Boolean>("shows") ?: true
         result.success(null)
+      }
+      "setLocale" -> {
+        DevReply.setLocale(call.argument<String>("tag"))
+        result.success(null)
+      }
+      "handle" -> {
+        val url = call.argument<String>("url")
+        result.success(url != null && openLink(android.net.Uri.parse(url)))
       }
       // Android push comes with FCM support in the SDK.
       "registerPushToken" -> result.success(null)
@@ -91,7 +105,19 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
     }
   }
 
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) { activity = binding.activity }
+  /** The button in DevReply's emails opens the app with `…?devreply=<conversation id>`: open it. */
+  private fun openLink(uri: android.net.Uri?): Boolean {
+    val id = uri?.takeIf { it.isHierarchical }?.getQueryParameter("devreply") ?: return false
+    if (!Regex("^[0-9a-fA-F-]{36}$").matches(id)) return false
+    if (configured) DevReply.handle(activity ?: context, uri) else pendingLink = uri
+    return true
+  }
+
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    activity = binding.activity
+    openLink(binding.activity.intent?.data)
+    binding.addOnNewIntentListener { intent -> openLink(intent.data) }
+  }
   override fun onDetachedFromActivityForConfigChanges() { activity = null }
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) { activity = binding.activity }
   override fun onDetachedFromActivity() { activity = null }

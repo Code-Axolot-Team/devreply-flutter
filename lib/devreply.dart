@@ -66,6 +66,17 @@ class DevReply {
   static Future<void> setShowsUnreadBubble(bool shows) =>
       _channel.invokeMethod<void>('setShowsUnreadBubble', {'shows': shows});
 
+  /// The chat's language: `es`, `pt-BR`, `ja`… (15 languages; others fall back to English), or null
+  /// to follow the device. Takes effect at once, even with the chat open.
+  static Future<void> setLocale(String? tag) => _channel.invokeMethod<void>('setLocale', {'tag': tag});
+
+  /// Opens the conversation a DevReply link points to (`yourapp://devreply?devreply=<id>`, from the
+  /// button in DevReply's emails). The plugin already catches these links when they open the app;
+  /// call this only if a links package (app_links, go_router…) swallows them first. Returns false for
+  /// any other URL.
+  static Future<bool> handle(String url) async =>
+      await _channel.invokeMethod<bool>('handle', {'url': url}) ?? false;
+
   /// iOS: the APNs device token as hex (e.g. from firebase_messaging `getAPNSToken()`). DevReply never
   /// asks for permission before the user writes; the chat offers it. Android push comes later.
   static Future<void> registerPushToken(String hexToken) async {
