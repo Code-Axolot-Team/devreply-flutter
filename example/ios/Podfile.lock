@@ -1,5 +1,5 @@
 PODS:
-  - devreply (0.3.2):
+  - devreply (0.5.0):
     - Flutter
   - Flutter (1.0.0)
 
@@ -14,7 +14,7 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  devreply: d26ddd816480610d911eca8fc77a43e143923e82
+  devreply: 033ac7bdee7f0171dda73c25ee185dc35e213bd9
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
 
 PODFILE CHECKSUM: 912e34f102da91123e38965ab4e5b3fb21e195f0

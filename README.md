@@ -150,7 +150,7 @@ Your team can also delete a user in the dashboard (the inbox's user panel → De
 
 ## How it's built
 
-`ios/` compiles the DevReply iOS SDK sources (`ios/DevReplySDK`, the same code as
+`ios/` compiles the DevReply iOS SDK sources (`ios/devreply/Sources/devreply/DevReplySDK`, with CocoaPods or Swift Package Manager, the same code as
 [devreply-ios](https://github.com/Code-Axolot-Team/devreply-ios)) with a thin plugin class. `android/` depends on
 [devreply-android](https://github.com/Code-Axolot-Team/devreply-android) from JitPack. Dart only passes calls through.
 

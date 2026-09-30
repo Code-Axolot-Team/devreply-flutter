@@ -1,2 +1,4 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
 #include "Generated.xcconfig"
+// DevReply needs iOS 17 (the plugin's CocoaPods pod and Swift package both declare it).
+IPHONEOS_DEPLOYMENT_TARGET = 17.0

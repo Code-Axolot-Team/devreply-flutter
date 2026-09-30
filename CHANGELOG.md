@@ -1,3 +1,9 @@
+## 0.5.1
+
+* iOS: Swift Package Manager support (Flutter's SwiftPM mode) next to CocoaPods: no more "doesn't support
+  Swift Package Manager" warning. Same code as 0.5.0. With Swift Package Manager the app's Runner target must be
+  iOS 17 or later (Xcode → Runner → General → Minimum Deployments).
+
 ## 0.5.0
 
 * 34 languages, Hebrew and Arabic right to left (from the native SDKs).
