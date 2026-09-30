@@ -77,7 +77,7 @@ await DevReply.setDarkTheme(DevReplyColors.devReplyDark);   // DevReply's "Deep 
 await DevReply.setDarkTheme(null);                          // dark off again
 ```
 
-**Languages:** the chat follows the device's language (15 languages); `DevReply.setLocale('es')` if your app has its
+**Languages:** the chat follows the device's language (34 languages, Hebrew and Arabic right to left); `DevReply.setLocale('es')` if your app has its
 own language setting (`null` follows the device).
 
 **Who replied:** each reply shows the teammate's name, title and photo (their persona in the dashboard), and the

@@ -16,13 +16,16 @@ enum DevReplyCategory { bug, billing, idea, question, other }
 /// Extra context for [DevReply.present]: a prefilled first message, and values the team sees on that
 /// conversation only (where it was opened, an error code…).
 class DevReplyPresentOptions {
-  const DevReplyPresentOptions({this.message, this.attributes = const {}});
+  const DevReplyPresentOptions({this.message, this.attributes = const {}, this.askName = true});
 
   /// Prefills the composer of the new conversation (the user sees it and sends it).
   final String? message;
 
   /// Text, numbers or true/false, e.g. `{'source': 'paywall', 'rc_error_code': 'PURCHASE_NOT_ALLOWED'}`.
   final Map<String, Object> attributes;
+
+  /// `false` skips "Before we start" (the name form) while this chat is open, e.g. from a failed purchase.
+  final bool askName;
 }
 
 /// The chat's colours; any left out keep DevReply's own. DevReply works out the rest (cards, secondary
@@ -137,6 +140,7 @@ class DevReply {
         'category': category?.name,
         'message': options?.message,
         'attributes': options?.attributes ?? const <String, Object>{},
+        'askName': options?.askName ?? true,
       }) ??
       false;
 
@@ -186,7 +190,7 @@ class DevReply {
   static Future<void> setShowsUnreadBubble(bool shows) =>
       _channel.invokeMethod<void>('setShowsUnreadBubble', {'shows': shows});
 
-  /// The chat's language: `es`, `pt-BR`, `ja`… (15 languages; others fall back to English), or null
+  /// The chat's language: `es`, `pt-BR`, `ja`… (34 languages; others fall back to English), or null
   /// to follow the device. Takes effect at once, even with the chat open.
   static Future<void> setLocale(String? tag) => _channel.invokeMethod<void>('setLocale', {'tag': tag});
 

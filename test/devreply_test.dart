@@ -39,7 +39,18 @@ void main() {
     await DevReply.setAttributes({'plan': 'pro', 'decks': 12, 'trial': false, 'old': null});
     expect(await DevReply.unreadCount, 3);
     expect(calls.map((c) => c.method), ['present', 'setUser', 'setAttributes', 'unreadCount']);
-    expect(calls[0].arguments, {'category': 'bug'});
+    expect(calls[0].arguments, {'category': 'bug', 'message': null, 'attributes': {}, 'askName': true});
     expect(() => DevReply.setAttributes({'bad': DateTime(2026)}), throwsArgumentError);
+  });
+
+  test('present with a message, context and no name form', () async {
+    await DevReply.present(DevReplyCategory.billing,
+        const DevReplyPresentOptions(message: 'Payment failed', attributes: {'source': 'paywall'}, askName: false));
+    expect(calls.last.arguments, {
+      'category': 'billing',
+      'message': 'Payment failed',
+      'attributes': {'source': 'paywall'},
+      'askName': false,
+    });
   });
 }

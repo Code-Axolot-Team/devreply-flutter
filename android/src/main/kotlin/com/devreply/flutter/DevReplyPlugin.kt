@@ -113,6 +113,7 @@ class DevReplyPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityA
             DevReplyCategory.entries.firstOrNull { it.name.equals(category, ignoreCase = true) },
             call.argument<String>("message"),
             attributes,
+            call.argument<Boolean>("askName") ?: true,
           ),
         )
       }

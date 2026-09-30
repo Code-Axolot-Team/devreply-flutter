@@ -66,7 +66,8 @@ public final class DevReplyPlugin: NSObject, FlutterPlugin, FlutterStreamHandler
                 result(DevReply.present(
                     category: (args["category"] as? String).flatMap(DevReplyCategory.init(rawValue:)),
                     message: args["message"] as? String,
-                    attributes: attributes
+                    attributes: attributes,
+                    askName: args["askName"] as? Bool ?? true
                 ))
             case "isAvailable":
                 result(DevReply.isAvailable)

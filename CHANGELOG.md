@@ -1,3 +1,13 @@
+## 0.5.0
+
+* 34 languages, Hebrew and Arabic right to left (from the native SDKs).
+* iOS: builds on Xcode 26.2 and in Swift 6 language mode (from the iOS SDK).
+* Everything in the native 0.5.0 SDKs: replies in Markdown, answer buttons, live updates over WebSocket while the
+  chat is open, the same account's history back after a logout on the same device, 34 languages with Hebrew and
+  Arabic right to left, the new logo on the unread bubble, and on iOS the fix for a long chat's scroll moving the sheet.
+* `DevReplyPresentOptions(askName: false)`: no name form while this chat is open (e.g. from a failed purchase).
+* Needs `devreply-android` 0.5.0 (JitPack) and the iOS sources of 0.5.0 (bundled).
+
 ## 0.4.4
 
 * `DevReply.present(category, DevReplyPresentOptions(message: …, attributes: {…}))`: prefills the new
