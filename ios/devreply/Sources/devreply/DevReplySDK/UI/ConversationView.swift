@@ -224,18 +224,24 @@ struct ConversationView: View {
     /// Started on this screen (not opened from the list): the email ask belongs to its first message only.
     @State private var startedHere: Bool
     @State private var emailAskDone = false
+    /// Restarts the profile's retries from the start (Retry, back in the app).
+    @State private var profileAttempt = 0
+    /// Continued from a topic's tile on home: "Start a new conversation" in that topic (0.5.1).
+    private let startNew: (() -> Void)?
     private var messenger: Messenger { Messenger.shared }
     private var config: MessengerConfig { messenger.config }
     private var palette: Palette { Palette.active }
 
-    init(existing: Conversation) {
+    init(existing: Conversation, startNew: (() -> Void)? = nil) {
         _model = State(initialValue: ConversationModel(existing: existing, category: nil))
         _startedHere = State(initialValue: false)
+        self.startNew = startNew
     }
 
     init(newIn category: DevReplyCategory?) {
         _model = State(initialValue: ConversationModel(existing: nil, category: category))
         _startedHere = State(initialValue: true)
+        startNew = nil
     }
 
     private var hasEmail: Bool { !(messenger.profile?.email ?? "").trimmingCharacters(in: .whitespaces).isEmpty }
@@ -263,11 +269,13 @@ struct ConversationView: View {
         .background(palette.background)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             if messenger.profile == nil {
-                Color.clear.frame(height: 1)
+                // Never an empty bottom: loading, then "can't connect" with Retry (0.5.1).
+                ProfileWait(error: messenger.profileError) { profileAttempt += 1 }
             } else if messenger.needsName {
                 NameForm()
             } else {
                 VStack(spacing: 0) {
+                    if let startNew { NewConversationLink(action: startNew) }
                     // One card at a time: the email ask first, then notifications.
                     if showsEmailAsk {
                         EmailAskCard { withAnimation(.snappy) { emailAskDone = true } }
@@ -302,8 +310,16 @@ struct ConversationView: View {
         // The back button sits on `primary`.
         .tint(palette.onHeader)
         .sensoryFeedback(.impact(weight: .light), trigger: model.sentCount)
+        // The message box needs the profile: retried while this screen is on (`keepLoadingProfile`).
+        .task(id: profileAttempt) { await messenger.keepLoadingProfile(fresh: profileAttempt > 0) }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            if messenger.profile == nil { profileAttempt += 1 }
+        }
+        .onChange(of: messenger.profile == nil) { _, missing in
+            // It came: a new conversation's composer gets the keyboard, as when it was there at once.
+            if !missing, model.conversation == nil, !messenger.needsName { composerFocused = true }
+        }
         .task(id: model.conversation?.id) {
-            await messenger.loadProfileIfNeeded()
             await model.load()
             // The 3 s poll: only while the live socket is down (spec 05, "Live updates").
             while !Task.isCancelled {
@@ -586,6 +602,77 @@ struct ConversationView: View {
     private func showsTime(at index: Int) -> Bool {
         guard index > 0 else { return true }
         return model.messages[index].createdAt.timeIntervalSince(model.messages[index - 1].createdAt) > 15 * 60
+    }
+}
+
+// MARK: - Until the profile is in (0.5.1)
+
+/// Where the message box goes, while `GET /v1/me` hasn't answered: a spinner, then after a failure "You seem
+/// to be offline." / "Something went wrong." with Try again (the retries go on meanwhile).
+private struct ProfileWait: View {
+    /// Outline and divider widths × the theme's `outlineWidth`.
+    @Environment(\.devReplyLine) private var line
+    let error: DevReplyError?
+    let retry: () -> Void
+    private var palette: Palette { Palette.active }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            if let error {
+                Text(ErrorNote.text(for: error))
+                    .font(.text(15, .medium))
+                    .foregroundStyle(palette.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("devreply.profile.error")
+                Spacer(minLength: 8)
+                Button(action: retry) {
+                    Text(t("try_again"))
+                        .font(.text(15, .bold))
+                        .foregroundStyle(palette.onAccent)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                }
+                .buttonStyle(BrutalPressStyle(fill: palette.accent, shadow: 3))
+                .accessibilityIdentifier("devreply.profile.retry")
+            } else {
+                ProgressView()
+                    .tint(palette.ink)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("devreply.profile.loading")
+            }
+        }
+        .frame(minHeight: 46)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(palette.surface.ignoresSafeArea(.container, edges: .bottom))
+        .overlay(alignment: .top) { Rectangle().fill(palette.outline).frame(height: 3 * line) }
+    }
+}
+
+/// Above the message box of a conversation continued from a topic's tile: a fresh one in that topic (0.5.1).
+private struct NewConversationLink: View {
+    let action: () -> Void
+    private var palette: Palette { Palette.active }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: "plus")
+                    .font(.system(size: 13, weight: .black))
+                    .accessibilityHidden(true)
+                Text(t("home.new_conversation"))
+                    .font(.text(14, .bold, relativeTo: .footnote))
+                    .underline()
+            }
+            .foregroundStyle(palette.ink)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .background(palette.background)
+        .accessibilityIdentifier("devreply.new_conversation")
     }
 }
 

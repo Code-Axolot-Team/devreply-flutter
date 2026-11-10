@@ -14,6 +14,9 @@ final class Messenger {
     private(set) var isLoading = false
     private(set) var lastError: DevReplyError?
     private(set) var profile: Profile?
+    /// Why the last `GET /v1/me` failed while there's no profile yet: the chat shows "can't connect" with
+    /// Retry instead of the message box (0.5.1). `nil` while loading, and once the profile is in.
+    private(set) var profileError: DevReplyError?
     /// The messenger is on screen / this conversation is on screen (no banners for what the user sees).
     var isPresented = false
     var visibleConversation: UUID?
@@ -103,6 +106,16 @@ final class Messenger {
     }
 
     var unreadCount: Int { conversations.reduce(0) { $0 + $1.unread } }
+
+    /// The newest conversation with a team reply the user hasn't read: home shows it on top (0.5.1).
+    nonisolated static func unreadReply(in list: [Conversation]) -> Conversation? {
+        list.filter { $0.unread > 0 && $0.lastAuthor != "user" }.max { $0.lastMessageAt < $1.lastMessageAt }
+    }
+
+    /// The newest open conversation in this topic: a tap on the topic's tile on home continues it (0.5.1).
+    nonisolated static func openConversation(in category: DevReplyCategory, of list: [Conversation]) -> Conversation? {
+        list.filter { $0.status != "closed" && $0.category == category }.max { $0.lastMessageAt < $1.lastMessageAt }
+    }
 
     /// `DevReply.isAvailable`: configured, and the team hasn't switched the chat off.
     var isAvailable: Bool { Self.isAvailable(configured: client != nil, config: config) }
@@ -308,12 +321,12 @@ final class Messenger {
         guard client != nil else { return }
         isLoading = conversations.isEmpty
         defer { isLoading = false }
+        // The profile on its own: a failing config or list must not keep the message box away (0.5.1).
+        async let me = loadProfile()
         do {
             async let config = authorized { try await $0.config(token: $1) }
             async let list = authorized { try await $0.conversations(token: $1) }
-            async let me = authorized { try await $0.profile(token: $1) }
-            let (c, l, p) = try await (config, list, me)
-            profile = p
+            let (c, l) = try await (config, list)
             if c != self.config {
                 // Switched off in the dashboard: an open messenger closes itself (MessengerView), the
                 // unread bubble hides (UnreadBubble).
@@ -328,6 +341,7 @@ final class Messenger {
         } catch {
             lastError = .network
         }
+        _ = await me
     }
 
     /// A name is required before the first message (spec 05), unless the app supplied one.
@@ -486,6 +500,7 @@ final class Messenger {
         pendingAttributes = [:]
         conversations = []
         profile = nil
+        profileError = nil
         PushManager.shared.forgetSentToken()
         DevReply.closeMessenger()
     }
@@ -496,9 +511,35 @@ final class Messenger {
         Task { try? await saveProfile(name: name, email: email) }
     }
 
-    func loadProfileIfNeeded() async {
-        guard profile == nil else { return }
-        profile = try? await authorized { try await $0.profile(token: $1) }
+    /// `GET /v1/me`. True when the profile is in. A failure while there's none yet goes to `profileError`.
+    @discardableResult
+    func loadProfile() async -> Bool {
+        do {
+            profile = try await authorized { try await $0.profile(token: $1) }
+            profileError = nil
+            return true
+        } catch {
+            // Cancelled (the screen went, or Retry started over): not a failure to show.
+            if profile == nil, !Task.isCancelled { profileError = error as? DevReplyError ?? .network }
+            return false
+        }
+    }
+
+    /// While a conversation is on screen (the task's lifetime): until the profile is in, try again after
+    /// 1, 2, 4, 8, 16 s, then every 30 s. `fresh` (Retry, back in the app): shows loading again first.
+    func keepLoadingProfile(fresh: Bool = false) async {
+        guard client != nil, profile == nil else { return }
+        if fresh { profileError = nil }
+        var failures = 0
+        while !Task.isCancelled, profile == nil {
+            if await loadProfile() { return }
+            try? await Task.sleep(for: .seconds(Self.profileRetryDelay(afterFailures: failures)))
+            failures += 1
+        }
+    }
+
+    nonisolated static func profileRetryDelay(afterFailures count: Int) -> TimeInterval {
+        min(30, pow(2, Double(min(count, 5))))
     }
 
     // The last config per public key, in Caches (spec 05: fetched on open and cached).

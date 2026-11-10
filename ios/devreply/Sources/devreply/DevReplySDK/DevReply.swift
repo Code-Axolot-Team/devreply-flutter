@@ -10,12 +10,18 @@ import UserNotifications
 /// ```
 @MainActor
 public enum DevReply {
-    /// The production API. Override only for local development.
-    /// Nonisolated so it can be a default argument (Swift 6 language mode).
+    /// The production API. Override only for local development. Nonisolated (a constant, readable anywhere).
     nonisolated public static let defaultAPIURL = URL(string: "https://api.devreply.com")!
 
     /// Call once at launch with the app's public key. It is safe to ship inside the app.
-    public static func configure(_ publicKey: String, apiURL: URL = defaultAPIURL) {
+    public static func configure(_ publicKey: String) {
+        configure(publicKey, apiURL: defaultAPIURL)
+    }
+
+    /// `configure` against another server (local development). Two functions rather than a default argument:
+    /// a default argument is evaluated at the caller, and some Swift 6 toolchains flagged `defaultAPIURL`
+    /// there as main actor-isolated, referenced from a nonisolated context.
+    public static func configure(_ publicKey: String, apiURL: URL) {
         Messenger.shared.configure(publicKey: publicKey, apiURL: apiURL)
     }
 

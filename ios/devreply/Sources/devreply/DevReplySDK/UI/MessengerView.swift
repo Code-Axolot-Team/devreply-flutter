@@ -3,6 +3,9 @@ import SwiftUI
 enum Route: Hashable {
     case conversation(Conversation)
     case new(DevReplyCategory?)
+    /// A topic's tile on home, with an open conversation in that topic: that conversation, with "Start a new
+    /// conversation" one tap away (0.5.1).
+    case continuing(Conversation)
 }
 
 /// The messenger: home (greeting, start buttons, past conversations) → one conversation.
@@ -35,6 +38,9 @@ struct MessengerView: View {
                     switch route {
                     case .conversation(let c): ConversationView(existing: c)
                     case .new(let category): ConversationView(newIn: category)
+                    case .continuing(let c):
+                        // A new one replaces this one on the stack: back goes home.
+                        ConversationView(existing: c, startNew: { path = [.new(c.category ?? .other)] })
                     }
                 }
         }
@@ -75,6 +81,7 @@ struct HomeView: View {
             VStack(alignment: .leading, spacing: 0) {
                 header
                 VStack(alignment: .leading, spacing: 28) {
+                    if let reply = Messenger.unreadReply(in: messenger.conversations) { NewReplyCard(conversation: reply) }
                     startSection
                     if !messenger.conversations.isEmpty { recentSection }
                     if let error = messenger.lastError, messenger.conversations.isEmpty {
@@ -166,7 +173,9 @@ struct HomeView: View {
                 .foregroundStyle(palette.ink)
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
                 ForEach(messenger.config.startButtons) { button in
-                    NavigationLink(value: Route.new(button.category)) {
+                    // An open conversation in this topic: continue it, instead of writing the same thing twice.
+                    let open = Messenger.openConversation(in: button.category, of: messenger.conversations)
+                    NavigationLink(value: open.map(Route.continuing) ?? Route.new(button.category)) {
                         StartTile(button: button, title: messenger.config.title(for: button))
                     }
                     .buttonStyle(BrutalPressStyle())
@@ -189,6 +198,43 @@ struct HomeView: View {
                 .buttonStyle(BrutalPressStyle(shadow: 4))
             }
         }
+    }
+}
+
+/// A team reply the user hasn't read, on top of home: "New reply from <team>" and its first words (0.5.1).
+private struct NewReplyCard: View {
+    let conversation: Conversation
+    private var messenger: Messenger { Messenger.shared }
+    private var palette: Palette { Palette.active }
+
+    var body: some View {
+        let team = messenger.config.teamName.isEmpty ? t("team") : messenger.config.teamName
+        NavigationLink(value: Route.conversation(conversation)) {
+            HStack(alignment: .top, spacing: 12) {
+                TeamAvatar(name: messenger.config.teamName, size: 40, imageURL: messenger.config.appIconUrl)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(t("home.new_reply", ["team": team]))
+                        .font(.display(17, relativeTo: .headline))
+                        .foregroundStyle(palette.onAccent)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(ConversationRow.preview(conversation.lastText))
+                        .font(.text(15, .medium, relativeTo: .subheadline))
+                        .foregroundStyle(palette.onAccent)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 4)
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 17, weight: .black))
+                    .foregroundStyle(palette.onAccent)
+                    .accessibilityHidden(true)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(BrutalPressStyle(fill: palette.accent, shadow: 5))
+        .accessibilityIdentifier("devreply.home.new_reply")
     }
 }
 
@@ -303,20 +349,24 @@ struct SquareFace: View {
     let fill: Color?
     let lineWidth: CGFloat
     let fallback: String
+    @State private var image: UIImage?
 
     var body: some View {
         ZStack {
             initials
-            if let imageURL {
-                AsyncImage(url: imageURL) { phase in
-                    if case .success(let image) = phase {
-                        image.resizable().scaledToFill()
-                    }
-                }
+            if let image {
+                Image(uiImage: image).resizable().scaledToFill()
             }
         }
         .frame(width: size, height: size)
         .clipped()
+        // Not AsyncImage: a load that starts off screen (home under a chat opened straight away) gets
+        // cancelled and AsyncImage never tries again. This runs again every time the face appears, and
+        // the cache answers at once after the first load.
+        .task(id: imageURL) {
+            guard let imageURL else { image = nil; return }
+            if let loaded = await ImageCache.shared.image(for: imageURL) { image = loaded }
+        }
         .overlay(Rectangle().strokeBorder(Palette.active.outline, lineWidth: lineWidth * line))
         .accessibilityHidden(true)
     }
@@ -353,7 +403,9 @@ struct ErrorNote: View {
         .brutal(shadow: 0)
     }
 
-    private var message: String {
+    private var message: String { Self.text(for: error) }
+
+    static func text(for error: DevReplyError) -> String {
         switch error {
         case .network: t("error.offline")
         case .invalidPublicKey: t("error.key")

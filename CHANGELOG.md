@@ -1,3 +1,12 @@
+## 0.5.2
+
+* From the native 0.5.1 SDKs: the chat's message box always appears (if the user's profile can't load, the chat shows
+  loading, then "can't connect" with Try again, and keeps retrying); a new team reply is shown first on the chat's
+  home, and tapping a topic with an open conversation continues it ("Start a new conversation" stays one tap away;
+  `present()` still starts a new one); every request has a deadline, so a hanging or trickling server shows an error.
+* iOS: the app icon and team photos on the chat's home load again after the chat opened straight on a conversation.
+* iOS: the bundled iOS sources are 0.5.1, so the old Swift 6 warning about `defaultAPIURL` is gone.
+
 ## 0.5.1
 
 * iOS: Swift Package Manager support (Flutter's SwiftPM mode) next to CocoaPods: no more "doesn't support

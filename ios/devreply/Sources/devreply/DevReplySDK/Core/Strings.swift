@@ -135,6 +135,8 @@ enum DevReplyStrings {
         "push.open_settings": "Open Settings",
         "push.channel": "Replies",
         "a11y.unread": "{count} unread",
+        "home.new_reply": "New reply from {team}",
+        "home.new_conversation": "Start a new conversation",
     ]
 
     private static let lang_ar: [String: String] = [
@@ -227,6 +229,8 @@ enum DevReplyStrings {
         "push.open_settings": "فتح الإعدادات",
         "push.channel": "الردود",
         "a11y.unread": "غير مقروءة: {count}",
+        "home.new_reply": "رد جديد من {team}",
+        "home.new_conversation": "ابدأ محادثة جديدة",
     ]
 
     private static let lang_ca: [String: String] = [
@@ -319,6 +323,8 @@ enum DevReplyStrings {
         "push.open_settings": "Obre Configuració",
         "push.channel": "Respostes",
         "a11y.unread": "Sense llegir: {count}",
+        "home.new_reply": "Nova resposta de {team}",
+        "home.new_conversation": "Comença una conversa nova",
     ]
 
     private static let lang_cs: [String: String] = [
@@ -411,6 +417,8 @@ enum DevReplyStrings {
         "push.open_settings": "Otevřít Nastavení",
         "push.channel": "Odpovědi",
         "a11y.unread": "Nepřečtené: {count}",
+        "home.new_reply": "Nová odpověď od {team}",
+        "home.new_conversation": "Začít novou konverzaci",
     ]
 
     private static let lang_da: [String: String] = [
@@ -503,6 +511,8 @@ enum DevReplyStrings {
         "push.open_settings": "Åbn Indstillinger",
         "push.channel": "Svar",
         "a11y.unread": "Ulæste: {count}",
+        "home.new_reply": "Nyt svar fra {team}",
+        "home.new_conversation": "Start en ny samtale",
     ]
 
     private static let lang_de: [String: String] = [
@@ -595,6 +605,8 @@ enum DevReplyStrings {
         "push.open_settings": "Einstellungen öffnen",
         "push.channel": "Antworten",
         "a11y.unread": "{count} ungelesen",
+        "home.new_reply": "Neue Antwort von {team}",
+        "home.new_conversation": "Neue Unterhaltung beginnen",
     ]
 
     private static let lang_el: [String: String] = [
@@ -687,6 +699,8 @@ enum DevReplyStrings {
         "push.open_settings": "Άνοιγμα Ρυθμίσεων",
         "push.channel": "Απαντήσεις",
         "a11y.unread": "Μη αναγνωσμένα: {count}",
+        "home.new_reply": "Νέα απάντηση από {team}",
+        "home.new_conversation": "Ξεκινήστε νέα συνομιλία",
     ]
 
     private static let lang_es: [String: String] = [
@@ -779,6 +793,8 @@ enum DevReplyStrings {
         "push.open_settings": "Abrir Ajustes",
         "push.channel": "Respuestas",
         "a11y.unread": "{count} sin leer",
+        "home.new_reply": "Nueva respuesta de {team}",
+        "home.new_conversation": "Empezar una conversación nueva",
     ]
 
     private static let lang_fi: [String: String] = [
@@ -871,6 +887,8 @@ enum DevReplyStrings {
         "push.open_settings": "Avaa Asetukset",
         "push.channel": "Vastaukset",
         "a11y.unread": "Lukemattomia: {count}",
+        "home.new_reply": "Uusi vastaus: {team}",
+        "home.new_conversation": "Aloita uusi keskustelu",
     ]
 
     private static let lang_fr: [String: String] = [
@@ -963,6 +981,8 @@ enum DevReplyStrings {
         "push.open_settings": "Ouvrir Réglages",
         "push.channel": "Réponses",
         "a11y.unread": "{count} non lus",
+        "home.new_reply": "Nouvelle réponse de {team}",
+        "home.new_conversation": "Démarrer une nouvelle conversation",
     ]
 
     private static let lang_he: [String: String] = [
@@ -1055,6 +1075,8 @@ enum DevReplyStrings {
         "push.open_settings": "פתיחת ההגדרות",
         "push.channel": "תשובות",
         "a11y.unread": "לא נקראו: {count}",
+        "home.new_reply": "תשובה חדשה מ-{team}",
+        "home.new_conversation": "התחלת שיחה חדשה",
     ]
 
     private static let lang_hi: [String: String] = [
@@ -1147,6 +1169,8 @@ enum DevReplyStrings {
         "push.open_settings": "सेटिंग्स खोलें",
         "push.channel": "जवाब",
         "a11y.unread": "अपठित: {count}",
+        "home.new_reply": "{team} का नया जवाब",
+        "home.new_conversation": "नई बातचीत शुरू करें",
     ]
 
     private static let lang_hr: [String: String] = [
@@ -1239,6 +1263,8 @@ enum DevReplyStrings {
         "push.open_settings": "Otvori Postavke",
         "push.channel": "Odgovori",
         "a11y.unread": "Nepročitano: {count}",
+        "home.new_reply": "Novi odgovor od {team}",
+        "home.new_conversation": "Započni novi razgovor",
     ]
 
     private static let lang_hu: [String: String] = [
@@ -1331,6 +1357,8 @@ enum DevReplyStrings {
         "push.open_settings": "Beállítások megnyitása",
         "push.channel": "Válaszok",
         "a11y.unread": "Olvasatlan: {count}",
+        "home.new_reply": "Új válasz: {team}",
+        "home.new_conversation": "Új beszélgetés indítása",
     ]
 
     private static let lang_id: [String: String] = [
@@ -1423,6 +1451,8 @@ enum DevReplyStrings {
         "push.open_settings": "Buka Pengaturan",
         "push.channel": "Balasan",
         "a11y.unread": "Belum dibaca: {count}",
+        "home.new_reply": "Balasan baru dari {team}",
+        "home.new_conversation": "Mulai percakapan baru",
     ]
 
     private static let lang_it: [String: String] = [
@@ -1515,6 +1545,8 @@ enum DevReplyStrings {
         "push.open_settings": "Apri Impostazioni",
         "push.channel": "Risposte",
         "a11y.unread": "{count} da leggere",
+        "home.new_reply": "Nuova risposta da {team}",
+        "home.new_conversation": "Inizia una nuova conversazione",
     ]
 
     private static let lang_ja: [String: String] = [
@@ -1607,6 +1639,8 @@ enum DevReplyStrings {
         "push.open_settings": "設定を開く",
         "push.channel": "返信",
         "a11y.unread": "未読 {count} 件",
+        "home.new_reply": "{team}から新しい返信",
+        "home.new_conversation": "新しい会話を始める",
     ]
 
     private static let lang_ko: [String: String] = [
@@ -1699,6 +1733,8 @@ enum DevReplyStrings {
         "push.open_settings": "설정 열기",
         "push.channel": "답장",
         "a11y.unread": "읽지 않음 {count}개",
+        "home.new_reply": "{team}의 새 답장",
+        "home.new_conversation": "새 대화 시작",
     ]
 
     private static let lang_ms: [String: String] = [
@@ -1791,6 +1827,8 @@ enum DevReplyStrings {
         "push.open_settings": "Buka Tetapan",
         "push.channel": "Balasan",
         "a11y.unread": "Belum dibaca: {count}",
+        "home.new_reply": "Balasan baharu daripada {team}",
+        "home.new_conversation": "Mulakan perbualan baharu",
     ]
 
     private static let lang_nb: [String: String] = [
@@ -1883,6 +1921,8 @@ enum DevReplyStrings {
         "push.open_settings": "Åpne Innstillinger",
         "push.channel": "Svar",
         "a11y.unread": "Uleste: {count}",
+        "home.new_reply": "Nytt svar fra {team}",
+        "home.new_conversation": "Start en ny samtale",
     ]
 
     private static let lang_nl: [String: String] = [
@@ -1975,6 +2015,8 @@ enum DevReplyStrings {
         "push.open_settings": "Instellingen openen",
         "push.channel": "Antwoorden",
         "a11y.unread": "{count} ongelezen",
+        "home.new_reply": "Nieuw antwoord van {team}",
+        "home.new_conversation": "Nieuw gesprek beginnen",
     ]
 
     private static let lang_pl: [String: String] = [
@@ -2067,6 +2109,8 @@ enum DevReplyStrings {
         "push.open_settings": "Otwórz Ustawienia",
         "push.channel": "Odpowiedzi",
         "a11y.unread": "Nieprzeczytane: {count}",
+        "home.new_reply": "Nowa odpowiedź od {team}",
+        "home.new_conversation": "Rozpocznij nową rozmowę",
     ]
 
     private static let lang_pt_BR: [String: String] = [
@@ -2159,6 +2203,8 @@ enum DevReplyStrings {
         "push.open_settings": "Abrir Ajustes",
         "push.channel": "Respostas",
         "a11y.unread": "{count} não lidas",
+        "home.new_reply": "Nova resposta de {team}",
+        "home.new_conversation": "Começar uma nova conversa",
     ]
 
     private static let lang_pt_PT: [String: String] = [
@@ -2251,6 +2297,8 @@ enum DevReplyStrings {
         "push.open_settings": "Abrir Definições",
         "push.channel": "Respostas",
         "a11y.unread": "Por ler: {count}",
+        "home.new_reply": "Nova resposta de {team}",
+        "home.new_conversation": "Iniciar uma nova conversa",
     ]
 
     private static let lang_ro: [String: String] = [
@@ -2343,6 +2391,8 @@ enum DevReplyStrings {
         "push.open_settings": "Deschide Setările",
         "push.channel": "Răspunsuri",
         "a11y.unread": "Necitite: {count}",
+        "home.new_reply": "Răspuns nou de la {team}",
+        "home.new_conversation": "Începe o conversație nouă",
     ]
 
     private static let lang_ru: [String: String] = [
@@ -2435,6 +2485,8 @@ enum DevReplyStrings {
         "push.open_settings": "Открыть Настройки",
         "push.channel": "Ответы",
         "a11y.unread": "Непрочитанные: {count}",
+        "home.new_reply": "Новый ответ от {team}",
+        "home.new_conversation": "Начать новый разговор",
     ]
 
     private static let lang_sk: [String: String] = [
@@ -2527,6 +2579,8 @@ enum DevReplyStrings {
         "push.open_settings": "Otvoriť Nastavenia",
         "push.channel": "Odpovede",
         "a11y.unread": "Neprečítané: {count}",
+        "home.new_reply": "Nová odpoveď od {team}",
+        "home.new_conversation": "Začať nový rozhovor",
     ]
 
     private static let lang_sv: [String: String] = [
@@ -2619,6 +2673,8 @@ enum DevReplyStrings {
         "push.open_settings": "Öppna Inställningar",
         "push.channel": "Svar",
         "a11y.unread": "Olästa: {count}",
+        "home.new_reply": "Nytt svar från {team}",
+        "home.new_conversation": "Starta en ny konversation",
     ]
 
     private static let lang_th: [String: String] = [
@@ -2711,6 +2767,8 @@ enum DevReplyStrings {
         "push.open_settings": "เปิดการตั้งค่า",
         "push.channel": "คำตอบ",
         "a11y.unread": "ยังไม่ได้อ่าน: {count}",
+        "home.new_reply": "คำตอบใหม่จาก {team}",
+        "home.new_conversation": "เริ่มการสนทนาใหม่",
     ]
 
     private static let lang_tr: [String: String] = [
@@ -2803,6 +2861,8 @@ enum DevReplyStrings {
         "push.open_settings": "Ayarlar'ı aç",
         "push.channel": "Yanıtlar",
         "a11y.unread": "{count} okunmamış",
+        "home.new_reply": "{team} ekibinden yeni yanıt",
+        "home.new_conversation": "Yeni bir sohbet başlat",
     ]
 
     private static let lang_uk: [String: String] = [
@@ -2895,6 +2955,8 @@ enum DevReplyStrings {
         "push.open_settings": "Відкрити Параметри",
         "push.channel": "Відповіді",
         "a11y.unread": "Непрочитані: {count}",
+        "home.new_reply": "Нова відповідь від {team}",
+        "home.new_conversation": "Почати нову розмову",
     ]
 
     private static let lang_vi: [String: String] = [
@@ -2987,6 +3049,8 @@ enum DevReplyStrings {
         "push.open_settings": "Mở Cài đặt",
         "push.channel": "Phản hồi",
         "a11y.unread": "Chưa đọc: {count}",
+        "home.new_reply": "Trả lời mới từ {team}",
+        "home.new_conversation": "Bắt đầu cuộc trò chuyện mới",
     ]
 
     private static let lang_zh_Hans: [String: String] = [
@@ -3079,6 +3143,8 @@ enum DevReplyStrings {
         "push.open_settings": "打开设置",
         "push.channel": "回复",
         "a11y.unread": "{count} 条未读",
+        "home.new_reply": "{team} 的新回复",
+        "home.new_conversation": "开始新的对话",
     ]
 
     private static let lang_zh_Hant: [String: String] = [
@@ -3171,5 +3237,7 @@ enum DevReplyStrings {
         "push.open_settings": "開啟設定",
         "push.channel": "回覆",
         "a11y.unread": "未讀：{count}",
+        "home.new_reply": "{team} 的新回覆",
+        "home.new_conversation": "開始新的對話",
     ]
 }
