@@ -1,3 +1,12 @@
+## 0.6.0
+
+* From the native 0.6.0 SDKs: replies can carry **link buttons** that open your app's own deep links (or https),
+  **gifts** (a card whose link carries a one-time token your backend checks with `POST /v1/project/gifts/claim`) and
+  **several questions answered at once**. Your app's deep-link handling does the rest; nothing new to call.
+* Promotional messages from the team are labelled **Offer**, with **Don't send me offers** under them.
+* The SDK tells DevReply whether notifications are on, so the team knows if a message will push.
+* Removed "Start a new conversation" from a conversation opened from a topic: users keep writing there.
+
 ## 0.5.2
 
 * From the native 0.5.1 SDKs: the chat's message box always appears (if the user's profile can't load, the chat shows

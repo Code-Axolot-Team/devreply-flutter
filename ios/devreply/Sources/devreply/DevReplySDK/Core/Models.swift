@@ -1,7 +1,7 @@
 import Foundation
 
 /// Version of this SDK. Sent on install registration and compared with each block's `min_sdk`.
-public let devReplySDKVersion = "0.5.1"
+public let devReplySDKVersion = "0.6.0"
 
 /// What a conversation is about. Set by the start button the user picked (spec 05).
 public enum DevReplyCategory: String, Codable, Sendable, CaseIterable {
@@ -102,10 +102,13 @@ struct MessengerConfig: Codable, Sendable, Equatable {
     /// False when the team switched the chat off in the dashboard (0.4.4): `DevReply.isAvailable`.
     /// Missing (older servers) = on.
     let enabled: Bool
+    /// The app's own deep-link schemes (0.6, e.g. `kneefit`, lowercased): link buttons, gifts and Markdown
+    /// links may open them, besides https. Missing (older servers) = none.
+    let linkSchemes: [String]
 
     private enum Keys: String, CodingKey {
         case appName, teamName, greeting, intro, replyTime, replyWithin, startButtons, appIconUrl, team, localize, replyWithinKey
-        case enabled
+        case enabled, linkSchemes
     }
 
     func encode(to encoder: Encoder) throws {
@@ -122,12 +125,13 @@ struct MessengerConfig: Codable, Sendable, Equatable {
         try c.encodeIfPresent(localize, forKey: .localize)
         try c.encodeIfPresent(replyWithinKey, forKey: .replyWithinKey)
         try c.encode(enabled, forKey: .enabled)
+        try c.encode(linkSchemes, forKey: .linkSchemes)
     }
 
     init(
         appName: String, teamName: String, greeting: String, intro: String, replyTime: String, replyWithin: String,
         startButtons: [StartButton], appIconUrl: URL? = nil, team: [Persona] = [],
-        localize: [String]? = nil, replyWithinKey: String? = nil, enabled: Bool = true
+        localize: [String]? = nil, replyWithinKey: String? = nil, enabled: Bool = true, linkSchemes: [String] = []
     ) {
         self.appName = appName
         self.teamName = teamName
@@ -141,6 +145,7 @@ struct MessengerConfig: Codable, Sendable, Equatable {
         self.localize = localize
         self.replyWithinKey = replyWithinKey
         self.enabled = enabled
+        self.linkSchemes = linkSchemes
     }
 
     /// Every field is optional on the wire; missing ones fall back to the placeholder.
@@ -160,6 +165,8 @@ struct MessengerConfig: Codable, Sendable, Equatable {
         localize = ((try? c.decodeIfPresent(Lossy<String>.self, forKey: .localize)) ?? nil)?.items
         replyWithinKey = string(.replyWithinKey) ?? Self.presetKey(forEnglish: replyWithin)
         enabled = ((try? c.decodeIfPresent(Bool.self, forKey: .enabled)) ?? nil) ?? true
+        linkSchemes = (((try? c.decodeIfPresent(Lossy<String>.self, forKey: .linkSchemes)) ?? nil)?.items ?? [])
+            .map { $0.lowercased() }.filter { !$0.isEmpty }
     }
 
     /// The preset behind an English reply time ("3 working days" → `3_working_days`), for servers that
@@ -290,9 +297,13 @@ struct Message: Decodable, Sendable, Identifiable, Equatable {
     /// A user message that answered a button question (0.5.0): which question, which option. Read from the
     /// message or from any of its blocks, wherever the server puts it.
     let answer: ButtonAnswer?
+    /// A user message that answered a form (0.6): the form's message id and the answers, from its block.
+    let formAnswer: FormAnswer?
+    /// A team message marked as an offer (0.6): the chat shows "Offer" and "Don't send me offers" under it.
+    let promotional: Bool
 
     private enum Keys: String, CodingKey {
-        case id, author, blocks, createdAt, persona, answer
+        case id, author, blocks, createdAt, persona, answer, formAnswer, promotional
     }
 
     init(from decoder: Decoder) throws {
@@ -304,14 +315,20 @@ struct Message: Decodable, Sendable, Identifiable, Equatable {
         persona = (try? c.decodeIfPresent(Persona.self, forKey: .persona)) ?? nil
         answer = ((try? c.decodeIfPresent(ButtonAnswer.self, forKey: .answer)) ?? nil)
             ?? ((try? c.decodeIfPresent(Lossy<BlockAnswer>.self, forKey: .blocks)) ?? nil)?.items.lazy.compactMap(\.answer).first
+        formAnswer = ((try? c.decodeIfPresent(FormAnswer.self, forKey: .formAnswer)) ?? nil)
+            ?? ((try? c.decodeIfPresent(Lossy<BlockAnswer>.self, forKey: .blocks)) ?? nil)?.items.lazy.compactMap(\.formAnswer).first
+        promotional = author != .user && (((try? c.decodeIfPresent(Bool.self, forKey: .promotional)) ?? nil) ?? false)
     }
 
-    /// Only the `answer` of a block, if it has one.
+    /// Only the `answer` or `form_answer` of a block, if it has one.
     private struct BlockAnswer: Decodable, Sendable {
         let answer: ButtonAnswer?
-        private enum Keys: String, CodingKey { case answer }
+        let formAnswer: FormAnswer?
+        private enum Keys: String, CodingKey { case answer, formAnswer }
         init(from decoder: Decoder) throws {
-            answer = ((try? decoder.container(keyedBy: Keys.self).decodeIfPresent(ButtonAnswer.self, forKey: .answer)) ?? nil)
+            let c = try? decoder.container(keyedBy: Keys.self)
+            answer = ((try? c?.decodeIfPresent(ButtonAnswer.self, forKey: .answer)) ?? nil)
+            formAnswer = ((try? c?.decodeIfPresent(FormAnswer.self, forKey: .formAnswer)) ?? nil)
         }
     }
 
@@ -333,10 +350,17 @@ enum Block: Decodable, Sendable, Equatable {
     /// A question with answers as buttons (0.5.0): the question in Markdown, 2 to 5 options. `answered` is
     /// the chosen option's id when the server already says so on the block itself.
     case buttons(question: [MarkdownBlock], plain: String, options: [ButtonOption], answered: String?)
+    /// A Markdown intro (may be empty) and 1 to 3 buttons that open a link (0.6).
+    case links(intro: [MarkdownBlock], plain: String, links: [LinkButton])
+    /// A gift card that opens its deep link (0.6).
+    case gift(Gift)
+    /// Several questions answered in one go (0.6).
+    case form(FormBlock)
     case unsupported(fallback: String)
 
     private enum Keys: String, CodingKey {
         case type, text, fallback, minSdk, url, width, height, name, size, mime, key, options, answer
+        case links, giftId, title, expiresAt, questions
     }
 
     /// The server's resolved line, before it had a key.
@@ -379,6 +403,33 @@ enum Block: Decodable, Sendable, Equatable {
             } else {
                 self = .unsupported(fallback: fallback)
             }
+        case "links":
+            // min_sdk 0.6.0 (handled above): older SDKs show `fallback`, the intro and each label with its link.
+            let links = Array(((try? c.decode(Lossy<LinkButton>.self, forKey: .links))?.items ?? []).prefix(3))
+            if links.isEmpty {
+                self = .unsupported(fallback: fallback)
+            } else {
+                let blocks = Markdown.parse((try? c.decode(String.self, forKey: .text)) ?? "")
+                self = .links(intro: blocks, plain: Markdown.plain(blocks), links: links)
+            }
+        case "gift":
+            // min_sdk 0.6.0: older SDKs show `fallback`, the title and the link.
+            if let id = try? c.decode(UUID.self, forKey: .giftId), let title = try? c.decode(String.self, forKey: .title),
+               let url = try? c.decode(String.self, forKey: .url), URL(string: url) != nil {
+                self = .gift(Gift(id: id, title: title, text: (try? c.decode(String.self, forKey: .text)) ?? "",
+                                  url: url, expiresAt: try? c.decode(Date.self, forKey: .expiresAt)))
+            } else {
+                self = .unsupported(fallback: fallback)
+            }
+        case "form":
+            // min_sdk 0.6.0: older SDKs show `fallback`, the numbered questions and "Reply in your own words."
+            if let questions = try? c.decode([FormQuestion].self, forKey: .questions), !questions.isEmpty,
+               Set(questions.map(\.id)).count == questions.count {
+                let blocks = Markdown.parse((try? c.decode(String.self, forKey: .text)) ?? "")
+                self = .form(FormBlock(intro: blocks, plain: Markdown.plain(blocks), questions: questions))
+            } else {
+                self = .unsupported(fallback: fallback)
+            }
         case "image":
             if let url = try? c.decode(URL.self, forKey: .url) {
                 self = .image(url: url, width: try? c.decode(Int.self, forKey: .width), height: try? c.decode(Int.self, forKey: .height))
@@ -409,6 +460,9 @@ enum Block: Decodable, Sendable, Equatable {
         case .file(_, let name, _, _): name
         case .markdown(_, let plain): plain
         case .buttons(_, let plain, _, _): plain
+        case .links(_, let plain, let links): plain.isEmpty ? links.map(\.label).joined(separator: " · ") : plain
+        case .gift(let gift): gift.text.isEmpty ? "🎁 \(gift.title)" : "🎁 \(gift.title). \(gift.text)"
+        case .form(let form): form.plain.isEmpty ? form.questions.map(\.text).joined(separator: "\n") : form.plain
         case .unsupported(let fallback): fallback
         }
     }
@@ -564,6 +618,8 @@ struct Profile: Decodable, Sendable, Equatable {
     /// `PATCH /v1/me {user_id}` (0.5.0): this device's earlier user with that id got the install back, with
     /// their old conversations (spec 03, "Same device after logout"). Reload the list.
     var restored: Bool?
+    /// The user said "Don't send me offers" (0.6). Missing (older servers) = no.
+    var noPromotions: Bool?
 }
 
 /// A photo or file ready to upload.

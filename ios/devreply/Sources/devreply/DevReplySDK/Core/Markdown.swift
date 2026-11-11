@@ -12,7 +12,7 @@ struct MarkdownSpan: Equatable, Sendable {
     var italic = false
     var strike = false
     var code = false
-    /// `http`, `https` or `mailto` only.
+    /// `http`, `https` or `mailto`, or one of the app's own deep-link schemes (0.6, `link_schemes`).
     var link: String?
 
     /// Same marks (the text aside): adjacent spans like this are merged.
@@ -34,7 +34,10 @@ enum MarkdownBlock: Equatable, Sendable {
 enum Markdown {
     // MARK: Blocks
 
-    static func parse(_ markdown: String) -> [MarkdownBlock] {
+    /// `linkSchemes`: the app's own deep-link schemes (0.6), kept in links besides http, https and mailto.
+    static func parse(_ markdown: String, linkSchemes: [String] = LinkPolicy.appSchemes) -> [MarkdownBlock] {
+        let schemes = linkSchemes
+        func inline(_ text: String) -> [MarkdownSpan] { Markdown.inline(text, linkSchemes: schemes) }
         let normalized = markdown.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
         let lines = normalized.split(separator: "\n", omittingEmptySubsequences: false).map { Array(String($0).unicodeScalars) }
         var blocks: [MarkdownBlock] = []
@@ -157,17 +160,24 @@ enum Markdown {
 
     private static let escapable = Set("\\`*_~[]()#>!+-.".unicodeScalars)
     private static let schemes = ["http://", "https://", "mailto:"]
+
+    /// A link target kept as a link: the reference's three schemes, or `<scheme>:` of one of the app's own.
+    private static func keepsLink(_ url: String, _ linkSchemes: [String]) -> Bool {
+        if schemes.contains(where: url.hasPrefix) { return true }
+        guard let colon = url.firstIndex(of: ":") else { return false }
+        return linkSchemes.contains(url[..<colon].lowercased())
+    }
     private static let emphasis: [(token: String, bold: Bool, italic: Bool, strike: Bool)] = [
         ("***", true, true, false), ("**", true, false, false), ("__", true, false, false),
         ("~~", false, false, true), ("*", false, true, false), ("_", false, true, false),
     ]
 
-    static func inline(_ text: String) -> [MarkdownSpan] {
-        inline(Array(text.unicodeScalars), MarkdownSpan(text: ""))
+    static func inline(_ text: String, linkSchemes: [String] = []) -> [MarkdownSpan] {
+        inline(Array(text.unicodeScalars), MarkdownSpan(text: ""), linkSchemes)
     }
 
     /// `marks`: the marks around this text (its `text` unused).
-    private static func inline(_ s: [Unicode.Scalar], _ marks: MarkdownSpan) -> [MarkdownSpan] {
+    private static func inline(_ s: [Unicode.Scalar], _ marks: MarkdownSpan, _ linkSchemes: [String]) -> [MarkdownSpan] {
         var out: [MarkdownSpan] = []
         var buffer = String.UnicodeScalarView()
 
@@ -198,8 +208,8 @@ enum Markdown {
                 let url = string(s[(close + 2)..<end])
                 flush()
                 var inner = marks
-                if schemes.contains(where: url.hasPrefix) { inner.link = url }
-                out += inline(Array(s[(i + 1)..<close]), inner)
+                if keepsLink(url, linkSchemes) { inner.link = url }
+                out += inline(Array(s[(i + 1)..<close]), inner, linkSchemes)
                 i = end + 1; continue
             }
             if c == "h", hasPrefix(s, "http://", at: i) || hasPrefix(s, "https://", at: i),
@@ -230,7 +240,7 @@ enum Markdown {
                 inner.bold = inner.bold || bold
                 inner.italic = inner.italic || italic
                 inner.strike = inner.strike || strike
-                out += inline(Array(s[(i + n)..<k]), inner)
+                out += inline(Array(s[(i + n)..<k]), inner, linkSchemes)
                 i = k + n
                 handled = true
                 break

@@ -91,6 +91,38 @@ struct APIClient: Sendable {
         )
     }
 
+    /// The answers to a form (0.6): the server writes the readable summary. 409 when it was already answered,
+    /// 400 when a required one is missing or an id is unknown.
+    func sendFormAnswer(token: String, conversation: UUID, answer: FormAnswer) async throws -> Message {
+        try await send(
+            "POST", "v1/conversations/\(conversation.uuidString.lowercased())/messages", token: token,
+            body: ["form_answer": answer]
+        )
+    }
+
+    /// A tap on a link button (0.6), for the team's stats and webhooks (204).
+    func linkTapped(token: String, conversation: UUID, message: UUID, link: String) async throws {
+        let _: Empty = try await send(
+            "POST", "v1/conversations/\(conversation.uuidString.lowercased())/taps", token: token,
+            body: ["message_id": message.uuidString.lowercased(), "link_id": link]
+        )
+    }
+
+    /// The user opened a gift (0.6), install-scoped (204). The app checks the gift's token itself.
+    func giftOpened(token: String, gift: UUID) async throws {
+        let _: Empty = try await send("POST", "v1/gifts/\(gift.uuidString.lowercased())/opened", token: token)
+    }
+
+    /// The phone's notification permission (0.6): `allowed`, `denied`, `not_asked` or `provisional`.
+    func updatePushPermission(token: String, permission: String) async throws {
+        let _: Empty = try await send("PATCH", "v1/install", token: token, body: ["push_permission": permission])
+    }
+
+    /// "Don't send me offers" (0.6), and its undo.
+    func updateNoPromotions(token: String, _ value: Bool) async throws -> Profile {
+        try await send("PATCH", "v1/me", token: token, body: ["no_promotions": value])
+    }
+
     /// Live updates (0.5.0): a single-use, 60-second WebSocket URL for this install. 503 = switched off.
     func liveTicket(token: String) async throws -> LiveTicket {
         try await send("POST", "v1/live", token: token)

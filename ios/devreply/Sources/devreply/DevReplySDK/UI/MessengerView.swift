@@ -3,9 +3,6 @@ import SwiftUI
 enum Route: Hashable {
     case conversation(Conversation)
     case new(DevReplyCategory?)
-    /// A topic's tile on home, with an open conversation in that topic: that conversation, with "Start a new
-    /// conversation" one tap away (0.5.1).
-    case continuing(Conversation)
 }
 
 /// The messenger: home (greeting, start buttons, past conversations) → one conversation.
@@ -38,9 +35,6 @@ struct MessengerView: View {
                     switch route {
                     case .conversation(let c): ConversationView(existing: c)
                     case .new(let category): ConversationView(newIn: category)
-                    case .continuing(let c):
-                        // A new one replaces this one on the stack: back goes home.
-                        ConversationView(existing: c, startNew: { path = [.new(c.category ?? .other)] })
                     }
                 }
         }
@@ -173,9 +167,10 @@ struct HomeView: View {
                 .foregroundStyle(palette.ink)
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
                 ForEach(messenger.config.startButtons) { button in
-                    // An open conversation in this topic: continue it, instead of writing the same thing twice.
+                    // An open conversation in this topic: continue it, instead of writing the same thing twice
+                    // (0.6: no "Start a new conversation" link in it any more; the user writes there or goes back).
                     let open = Messenger.openConversation(in: button.category, of: messenger.conversations)
-                    NavigationLink(value: open.map(Route.continuing) ?? Route.new(button.category)) {
+                    NavigationLink(value: open.map(Route.conversation) ?? Route.new(button.category)) {
                         StartTile(button: button, title: messenger.config.title(for: button))
                     }
                     .buttonStyle(BrutalPressStyle())

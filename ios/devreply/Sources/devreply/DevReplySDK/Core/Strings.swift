@@ -136,7 +136,17 @@ enum DevReplyStrings {
         "push.channel": "Replies",
         "a11y.unread": "{count} unread",
         "home.new_reply": "New reply from {team}",
-        "home.new_conversation": "Start a new conversation",
+        "offer.label": "Offer",
+        "offer.opt_out": "Don't send me offers",
+        "offer.opted_out": "You won't get offers.",
+        "offer.undo": "Undo",
+        "gift.label": "A gift for you",
+        "gift.open": "Open gift",
+        "gift.expired": "This gift has expired",
+        "form.send": "Send answers",
+        "form.required": "Please answer this one.",
+        "form.pick_any": "Pick any",
+        "form.your_answer": "Your answer",
     ]
 
     private static let lang_ar: [String: String] = [
@@ -230,7 +240,17 @@ enum DevReplyStrings {
         "push.channel": "الردود",
         "a11y.unread": "غير مقروءة: {count}",
         "home.new_reply": "رد جديد من {team}",
-        "home.new_conversation": "ابدأ محادثة جديدة",
+        "offer.label": "عرض",
+        "offer.opt_out": "لا ترسلوا لي عروضًا",
+        "offer.opted_out": "لن تصلك عروض.",
+        "offer.undo": "تراجع",
+        "gift.label": "هدية لك",
+        "gift.open": "افتح الهدية",
+        "gift.expired": "انتهت صلاحية هذه الهدية",
+        "form.send": "إرسال الإجابات",
+        "form.required": "يرجى الإجابة على هذا السؤال.",
+        "form.pick_any": "اختر ما يناسبك",
+        "form.your_answer": "إجابتك",
     ]
 
     private static let lang_ca: [String: String] = [
@@ -324,7 +344,17 @@ enum DevReplyStrings {
         "push.channel": "Respostes",
         "a11y.unread": "Sense llegir: {count}",
         "home.new_reply": "Nova resposta de {team}",
-        "home.new_conversation": "Comença una conversa nova",
+        "offer.label": "Oferta",
+        "offer.opt_out": "No m'envieu ofertes",
+        "offer.opted_out": "No rebràs ofertes.",
+        "offer.undo": "Desfés",
+        "gift.label": "Un regal per a tu",
+        "gift.open": "Obre el regal",
+        "gift.expired": "Aquest regal ha caducat",
+        "form.send": "Envia les respostes",
+        "form.required": "Respon aquesta, si us plau.",
+        "form.pick_any": "Tria'n les que vulguis",
+        "form.your_answer": "La teva resposta",
     ]
 
     private static let lang_cs: [String: String] = [
@@ -418,7 +448,17 @@ enum DevReplyStrings {
         "push.channel": "Odpovědi",
         "a11y.unread": "Nepřečtené: {count}",
         "home.new_reply": "Nová odpověď od {team}",
-        "home.new_conversation": "Začít novou konverzaci",
+        "offer.label": "Nabídka",
+        "offer.opt_out": "Neposílejte mi nabídky",
+        "offer.opted_out": "Nabídky už nebudete dostávat.",
+        "offer.undo": "Zpět",
+        "gift.label": "Dárek pro vás",
+        "gift.open": "Otevřít dárek",
+        "gift.expired": "Platnost tohoto dárku vypršela",
+        "form.send": "Odeslat odpovědi",
+        "form.required": "Odpovězte prosím na tuto otázku.",
+        "form.pick_any": "Vyberte libovolné",
+        "form.your_answer": "Vaše odpověď",
     ]
 
     private static let lang_da: [String: String] = [
@@ -512,7 +552,17 @@ enum DevReplyStrings {
         "push.channel": "Svar",
         "a11y.unread": "Ulæste: {count}",
         "home.new_reply": "Nyt svar fra {team}",
-        "home.new_conversation": "Start en ny samtale",
+        "offer.label": "Tilbud",
+        "offer.opt_out": "Send mig ikke tilbud",
+        "offer.opted_out": "Du får ikke tilbud.",
+        "offer.undo": "Fortryd",
+        "gift.label": "En gave til dig",
+        "gift.open": "Åbn gaven",
+        "gift.expired": "Denne gave er udløbet",
+        "form.send": "Send svar",
+        "form.required": "Besvar venligst dette spørgsmål.",
+        "form.pick_any": "Vælg så mange du vil",
+        "form.your_answer": "Dit svar",
     ]
 
     private static let lang_de: [String: String] = [
@@ -606,7 +656,17 @@ enum DevReplyStrings {
         "push.channel": "Antworten",
         "a11y.unread": "{count} ungelesen",
         "home.new_reply": "Neue Antwort von {team}",
-        "home.new_conversation": "Neue Unterhaltung beginnen",
+        "offer.label": "Angebot",
+        "offer.opt_out": "Keine Angebote mehr senden",
+        "offer.opted_out": "Du erhältst keine Angebote mehr.",
+        "offer.undo": "Rückgängig",
+        "gift.label": "Ein Geschenk für dich",
+        "gift.open": "Geschenk öffnen",
+        "gift.expired": "Dieses Geschenk ist abgelaufen",
+        "form.send": "Antworten senden",
+        "form.required": "Bitte beantworte diese Frage.",
+        "form.pick_any": "Beliebig viele wählen",
+        "form.your_answer": "Deine Antwort",
     ]
 
     private static let lang_el: [String: String] = [
@@ -700,7 +760,17 @@ enum DevReplyStrings {
         "push.channel": "Απαντήσεις",
         "a11y.unread": "Μη αναγνωσμένα: {count}",
         "home.new_reply": "Νέα απάντηση από {team}",
-        "home.new_conversation": "Ξεκινήστε νέα συνομιλία",
+        "offer.label": "Προσφορά",
+        "offer.opt_out": "Μη μου στέλνετε προσφορές",
+        "offer.opted_out": "Δεν θα λαμβάνετε προσφορές.",
+        "offer.undo": "Αναίρεση",
+        "gift.label": "Ένα δώρο για εσάς",
+        "gift.open": "Άνοιγμα δώρου",
+        "gift.expired": "Αυτό το δώρο έχει λήξει",
+        "form.send": "Αποστολή απαντήσεων",
+        "form.required": "Απαντήστε σε αυτή την ερώτηση.",
+        "form.pick_any": "Επιλέξτε όσα θέλετε",
+        "form.your_answer": "Η απάντησή σας",
     ]
 
     private static let lang_es: [String: String] = [
@@ -794,7 +864,17 @@ enum DevReplyStrings {
         "push.channel": "Respuestas",
         "a11y.unread": "{count} sin leer",
         "home.new_reply": "Nueva respuesta de {team}",
-        "home.new_conversation": "Empezar una conversación nueva",
+        "offer.label": "Oferta",
+        "offer.opt_out": "No me envíes ofertas",
+        "offer.opted_out": "No recibirás ofertas.",
+        "offer.undo": "Deshacer",
+        "gift.label": "Un regalo para ti",
+        "gift.open": "Abrir regalo",
+        "gift.expired": "Este regalo ha caducado",
+        "form.send": "Enviar respuestas",
+        "form.required": "Responde a esta, por favor.",
+        "form.pick_any": "Elige las que quieras",
+        "form.your_answer": "Tu respuesta",
     ]
 
     private static let lang_fi: [String: String] = [
@@ -888,7 +968,17 @@ enum DevReplyStrings {
         "push.channel": "Vastaukset",
         "a11y.unread": "Lukemattomia: {count}",
         "home.new_reply": "Uusi vastaus: {team}",
-        "home.new_conversation": "Aloita uusi keskustelu",
+        "offer.label": "Tarjous",
+        "offer.opt_out": "Älä lähetä minulle tarjouksia",
+        "offer.opted_out": "Et saa tarjouksia.",
+        "offer.undo": "Kumoa",
+        "gift.label": "Lahja sinulle",
+        "gift.open": "Avaa lahja",
+        "gift.expired": "Tämä lahja on vanhentunut",
+        "form.send": "Lähetä vastaukset",
+        "form.required": "Vastaa tähän kysymykseen.",
+        "form.pick_any": "Valitse haluamasi",
+        "form.your_answer": "Vastauksesi",
     ]
 
     private static let lang_fr: [String: String] = [
@@ -982,7 +1072,17 @@ enum DevReplyStrings {
         "push.channel": "Réponses",
         "a11y.unread": "{count} non lus",
         "home.new_reply": "Nouvelle réponse de {team}",
-        "home.new_conversation": "Démarrer une nouvelle conversation",
+        "offer.label": "Offre",
+        "offer.opt_out": "Ne plus m'envoyer d'offres",
+        "offer.opted_out": "Vous ne recevrez plus d'offres.",
+        "offer.undo": "Annuler",
+        "gift.label": "Un cadeau pour vous",
+        "gift.open": "Ouvrir le cadeau",
+        "gift.expired": "Ce cadeau a expiré",
+        "form.send": "Envoyer les réponses",
+        "form.required": "Veuillez répondre à cette question.",
+        "form.pick_any": "Choisissez librement",
+        "form.your_answer": "Votre réponse",
     ]
 
     private static let lang_he: [String: String] = [
@@ -1076,7 +1176,17 @@ enum DevReplyStrings {
         "push.channel": "תשובות",
         "a11y.unread": "לא נקראו: {count}",
         "home.new_reply": "תשובה חדשה מ-{team}",
-        "home.new_conversation": "התחלת שיחה חדשה",
+        "offer.label": "הצעה",
+        "offer.opt_out": "אל תשלחו לי הצעות",
+        "offer.opted_out": "לא תקבלו הצעות.",
+        "offer.undo": "ביטול",
+        "gift.label": "מתנה בשבילך",
+        "gift.open": "פתיחת המתנה",
+        "gift.expired": "תוקף המתנה הזו פג",
+        "form.send": "שליחת התשובות",
+        "form.required": "נא לענות על השאלה הזו.",
+        "form.pick_any": "אפשר לבחור כמה",
+        "form.your_answer": "התשובה שלך",
     ]
 
     private static let lang_hi: [String: String] = [
@@ -1170,7 +1280,17 @@ enum DevReplyStrings {
         "push.channel": "जवाब",
         "a11y.unread": "अपठित: {count}",
         "home.new_reply": "{team} का नया जवाब",
-        "home.new_conversation": "नई बातचीत शुरू करें",
+        "offer.label": "ऑफ़र",
+        "offer.opt_out": "मुझे ऑफ़र न भेजें",
+        "offer.opted_out": "आपको ऑफ़र नहीं मिलेंगे।",
+        "offer.undo": "पूर्ववत करें",
+        "gift.label": "आपके लिए एक तोहफ़ा",
+        "gift.open": "तोहफ़ा खोलें",
+        "gift.expired": "यह तोहफ़ा समाप्त हो चुका है",
+        "form.send": "जवाब भेजें",
+        "form.required": "कृपया इसका जवाब दें।",
+        "form.pick_any": "कोई भी चुनें",
+        "form.your_answer": "आपका जवाब",
     ]
 
     private static let lang_hr: [String: String] = [
@@ -1264,7 +1384,17 @@ enum DevReplyStrings {
         "push.channel": "Odgovori",
         "a11y.unread": "Nepročitano: {count}",
         "home.new_reply": "Novi odgovor od {team}",
-        "home.new_conversation": "Započni novi razgovor",
+        "offer.label": "Ponuda",
+        "offer.opt_out": "Ne šaljite mi ponude",
+        "offer.opted_out": "Nećete primati ponude.",
+        "offer.undo": "Poništi",
+        "gift.label": "Poklon za vas",
+        "gift.open": "Otvori poklon",
+        "gift.expired": "Ovaj poklon je istekao",
+        "form.send": "Pošalji odgovore",
+        "form.required": "Molimo odgovorite na ovo pitanje.",
+        "form.pick_any": "Odaberite po želji",
+        "form.your_answer": "Vaš odgovor",
     ]
 
     private static let lang_hu: [String: String] = [
@@ -1358,7 +1488,17 @@ enum DevReplyStrings {
         "push.channel": "Válaszok",
         "a11y.unread": "Olvasatlan: {count}",
         "home.new_reply": "Új válasz: {team}",
-        "home.new_conversation": "Új beszélgetés indítása",
+        "offer.label": "Ajánlat",
+        "offer.opt_out": "Ne küldjetek ajánlatokat",
+        "offer.opted_out": "Nem kapsz több ajánlatot.",
+        "offer.undo": "Visszavonás",
+        "gift.label": "Ajándék neked",
+        "gift.open": "Ajándék megnyitása",
+        "gift.expired": "Ez az ajándék lejárt",
+        "form.send": "Válaszok küldése",
+        "form.required": "Kérjük, válaszolj erre.",
+        "form.pick_any": "Válassz tetszés szerint",
+        "form.your_answer": "A válaszod",
     ]
 
     private static let lang_id: [String: String] = [
@@ -1452,7 +1592,17 @@ enum DevReplyStrings {
         "push.channel": "Balasan",
         "a11y.unread": "Belum dibaca: {count}",
         "home.new_reply": "Balasan baru dari {team}",
-        "home.new_conversation": "Mulai percakapan baru",
+        "offer.label": "Penawaran",
+        "offer.opt_out": "Jangan kirimi saya penawaran",
+        "offer.opted_out": "Anda tidak akan menerima penawaran.",
+        "offer.undo": "Urungkan",
+        "gift.label": "Hadiah untuk Anda",
+        "gift.open": "Buka hadiah",
+        "gift.expired": "Hadiah ini sudah kedaluwarsa",
+        "form.send": "Kirim jawaban",
+        "form.required": "Harap jawab pertanyaan ini.",
+        "form.pick_any": "Pilih sesukanya",
+        "form.your_answer": "Jawaban Anda",
     ]
 
     private static let lang_it: [String: String] = [
@@ -1546,7 +1696,17 @@ enum DevReplyStrings {
         "push.channel": "Risposte",
         "a11y.unread": "{count} da leggere",
         "home.new_reply": "Nuova risposta da {team}",
-        "home.new_conversation": "Inizia una nuova conversazione",
+        "offer.label": "Offerta",
+        "offer.opt_out": "Non inviarmi offerte",
+        "offer.opted_out": "Non riceverai offerte.",
+        "offer.undo": "Annulla",
+        "gift.label": "Un regalo per te",
+        "gift.open": "Apri il regalo",
+        "gift.expired": "Questo regalo è scaduto",
+        "form.send": "Invia le risposte",
+        "form.required": "Rispondi a questa domanda.",
+        "form.pick_any": "Scegli quelle che vuoi",
+        "form.your_answer": "La tua risposta",
     ]
 
     private static let lang_ja: [String: String] = [
@@ -1640,7 +1800,17 @@ enum DevReplyStrings {
         "push.channel": "返信",
         "a11y.unread": "未読 {count} 件",
         "home.new_reply": "{team}から新しい返信",
-        "home.new_conversation": "新しい会話を始める",
+        "offer.label": "特典",
+        "offer.opt_out": "特典を送らないでください",
+        "offer.opted_out": "特典は届かなくなります。",
+        "offer.undo": "元に戻す",
+        "gift.label": "あなたへのギフト",
+        "gift.open": "ギフトを開く",
+        "gift.expired": "このギフトは期限切れです",
+        "form.send": "回答を送信",
+        "form.required": "この質問に答えてください。",
+        "form.pick_any": "いくつでも選べます",
+        "form.your_answer": "あなたの回答",
     ]
 
     private static let lang_ko: [String: String] = [
@@ -1734,7 +1904,17 @@ enum DevReplyStrings {
         "push.channel": "답장",
         "a11y.unread": "읽지 않음 {count}개",
         "home.new_reply": "{team}의 새 답장",
-        "home.new_conversation": "새 대화 시작",
+        "offer.label": "혜택",
+        "offer.opt_out": "혜택을 보내지 마세요",
+        "offer.opted_out": "더 이상 혜택을 받지 않습니다.",
+        "offer.undo": "실행 취소",
+        "gift.label": "당신을 위한 선물",
+        "gift.open": "선물 열기",
+        "gift.expired": "이 선물은 만료되었습니다",
+        "form.send": "답변 보내기",
+        "form.required": "이 질문에 답해 주세요.",
+        "form.pick_any": "원하는 만큼 선택",
+        "form.your_answer": "내 답변",
     ]
 
     private static let lang_ms: [String: String] = [
@@ -1828,7 +2008,17 @@ enum DevReplyStrings {
         "push.channel": "Balasan",
         "a11y.unread": "Belum dibaca: {count}",
         "home.new_reply": "Balasan baharu daripada {team}",
-        "home.new_conversation": "Mulakan perbualan baharu",
+        "offer.label": "Tawaran",
+        "offer.opt_out": "Jangan hantar tawaran kepada saya",
+        "offer.opted_out": "Anda tidak akan menerima tawaran.",
+        "offer.undo": "Buat asal",
+        "gift.label": "Hadiah untuk anda",
+        "gift.open": "Buka hadiah",
+        "gift.expired": "Hadiah ini telah tamat tempoh",
+        "form.send": "Hantar jawapan",
+        "form.required": "Sila jawab soalan ini.",
+        "form.pick_any": "Pilih mana-mana",
+        "form.your_answer": "Jawapan anda",
     ]
 
     private static let lang_nb: [String: String] = [
@@ -1922,7 +2112,17 @@ enum DevReplyStrings {
         "push.channel": "Svar",
         "a11y.unread": "Uleste: {count}",
         "home.new_reply": "Nytt svar fra {team}",
-        "home.new_conversation": "Start en ny samtale",
+        "offer.label": "Tilbud",
+        "offer.opt_out": "Ikke send meg tilbud",
+        "offer.opted_out": "Du får ikke tilbud.",
+        "offer.undo": "Angre",
+        "gift.label": "En gave til deg",
+        "gift.open": "Åpne gaven",
+        "gift.expired": "Denne gaven har utløpt",
+        "form.send": "Send svar",
+        "form.required": "Svar på dette spørsmålet.",
+        "form.pick_any": "Velg så mange du vil",
+        "form.your_answer": "Svaret ditt",
     ]
 
     private static let lang_nl: [String: String] = [
@@ -2016,7 +2216,17 @@ enum DevReplyStrings {
         "push.channel": "Antwoorden",
         "a11y.unread": "{count} ongelezen",
         "home.new_reply": "Nieuw antwoord van {team}",
-        "home.new_conversation": "Nieuw gesprek beginnen",
+        "offer.label": "Aanbieding",
+        "offer.opt_out": "Stuur me geen aanbiedingen",
+        "offer.opted_out": "Je krijgt geen aanbiedingen meer.",
+        "offer.undo": "Ongedaan maken",
+        "gift.label": "Een cadeau voor jou",
+        "gift.open": "Cadeau openen",
+        "gift.expired": "Dit cadeau is verlopen",
+        "form.send": "Antwoorden versturen",
+        "form.required": "Beantwoord deze vraag.",
+        "form.pick_any": "Kies zoveel je wilt",
+        "form.your_answer": "Jouw antwoord",
     ]
 
     private static let lang_pl: [String: String] = [
@@ -2110,7 +2320,17 @@ enum DevReplyStrings {
         "push.channel": "Odpowiedzi",
         "a11y.unread": "Nieprzeczytane: {count}",
         "home.new_reply": "Nowa odpowiedź od {team}",
-        "home.new_conversation": "Rozpocznij nową rozmowę",
+        "offer.label": "Oferta",
+        "offer.opt_out": "Nie wysyłajcie mi ofert",
+        "offer.opted_out": "Nie będziesz otrzymywać ofert.",
+        "offer.undo": "Cofnij",
+        "gift.label": "Prezent dla Ciebie",
+        "gift.open": "Otwórz prezent",
+        "gift.expired": "Ten prezent wygasł",
+        "form.send": "Wyślij odpowiedzi",
+        "form.required": "Odpowiedz na to pytanie.",
+        "form.pick_any": "Wybierz dowolne",
+        "form.your_answer": "Twoja odpowiedź",
     ]
 
     private static let lang_pt_BR: [String: String] = [
@@ -2204,7 +2424,17 @@ enum DevReplyStrings {
         "push.channel": "Respostas",
         "a11y.unread": "{count} não lidas",
         "home.new_reply": "Nova resposta de {team}",
-        "home.new_conversation": "Começar uma nova conversa",
+        "offer.label": "Oferta",
+        "offer.opt_out": "Não me envie ofertas",
+        "offer.opted_out": "Você não vai receber ofertas.",
+        "offer.undo": "Desfazer",
+        "gift.label": "Um presente para você",
+        "gift.open": "Abrir presente",
+        "gift.expired": "Este presente expirou",
+        "form.send": "Enviar respostas",
+        "form.required": "Responda esta, por favor.",
+        "form.pick_any": "Escolha quantas quiser",
+        "form.your_answer": "Sua resposta",
     ]
 
     private static let lang_pt_PT: [String: String] = [
@@ -2298,7 +2528,17 @@ enum DevReplyStrings {
         "push.channel": "Respostas",
         "a11y.unread": "Por ler: {count}",
         "home.new_reply": "Nova resposta de {team}",
-        "home.new_conversation": "Iniciar uma nova conversa",
+        "offer.label": "Oferta",
+        "offer.opt_out": "Não me enviem ofertas",
+        "offer.opted_out": "Não vai receber ofertas.",
+        "offer.undo": "Anular",
+        "gift.label": "Um presente para si",
+        "gift.open": "Abrir presente",
+        "gift.expired": "Este presente expirou",
+        "form.send": "Enviar respostas",
+        "form.required": "Responda a esta, por favor.",
+        "form.pick_any": "Escolha as que quiser",
+        "form.your_answer": "A sua resposta",
     ]
 
     private static let lang_ro: [String: String] = [
@@ -2392,7 +2632,17 @@ enum DevReplyStrings {
         "push.channel": "Răspunsuri",
         "a11y.unread": "Necitite: {count}",
         "home.new_reply": "Răspuns nou de la {team}",
-        "home.new_conversation": "Începe o conversație nouă",
+        "offer.label": "Ofertă",
+        "offer.opt_out": "Nu-mi mai trimiteți oferte",
+        "offer.opted_out": "Nu vei mai primi oferte.",
+        "offer.undo": "Anulează",
+        "gift.label": "Un cadou pentru tine",
+        "gift.open": "Deschide cadoul",
+        "gift.expired": "Acest cadou a expirat",
+        "form.send": "Trimite răspunsurile",
+        "form.required": "Te rugăm să răspunzi la aceasta.",
+        "form.pick_any": "Alege oricâte",
+        "form.your_answer": "Răspunsul tău",
     ]
 
     private static let lang_ru: [String: String] = [
@@ -2486,7 +2736,17 @@ enum DevReplyStrings {
         "push.channel": "Ответы",
         "a11y.unread": "Непрочитанные: {count}",
         "home.new_reply": "Новый ответ от {team}",
-        "home.new_conversation": "Начать новый разговор",
+        "offer.label": "Предложение",
+        "offer.opt_out": "Не присылать мне предложения",
+        "offer.opted_out": "Вы не будете получать предложения.",
+        "offer.undo": "Отменить",
+        "gift.label": "Подарок для вас",
+        "gift.open": "Открыть подарок",
+        "gift.expired": "Срок действия подарка истёк",
+        "form.send": "Отправить ответы",
+        "form.required": "Ответьте, пожалуйста, на этот вопрос.",
+        "form.pick_any": "Можно выбрать несколько",
+        "form.your_answer": "Ваш ответ",
     ]
 
     private static let lang_sk: [String: String] = [
@@ -2580,7 +2840,17 @@ enum DevReplyStrings {
         "push.channel": "Odpovede",
         "a11y.unread": "Neprečítané: {count}",
         "home.new_reply": "Nová odpoveď od {team}",
-        "home.new_conversation": "Začať nový rozhovor",
+        "offer.label": "Ponuka",
+        "offer.opt_out": "Neposielajte mi ponuky",
+        "offer.opted_out": "Ponuky už nebudete dostávať.",
+        "offer.undo": "Späť",
+        "gift.label": "Darček pre vás",
+        "gift.open": "Otvoriť darček",
+        "gift.expired": "Platnosť tohto darčeka vypršala",
+        "form.send": "Odoslať odpovede",
+        "form.required": "Odpovedzte, prosím, na túto otázku.",
+        "form.pick_any": "Vyberte ľubovoľné",
+        "form.your_answer": "Vaša odpoveď",
     ]
 
     private static let lang_sv: [String: String] = [
@@ -2674,7 +2944,17 @@ enum DevReplyStrings {
         "push.channel": "Svar",
         "a11y.unread": "Olästa: {count}",
         "home.new_reply": "Nytt svar från {team}",
-        "home.new_conversation": "Starta en ny konversation",
+        "offer.label": "Erbjudande",
+        "offer.opt_out": "Skicka inga erbjudanden till mig",
+        "offer.opted_out": "Du får inga erbjudanden.",
+        "offer.undo": "Ångra",
+        "gift.label": "En gåva till dig",
+        "gift.open": "Öppna gåvan",
+        "gift.expired": "Den här gåvan har gått ut",
+        "form.send": "Skicka svar",
+        "form.required": "Svara på den här frågan.",
+        "form.pick_any": "Välj så många du vill",
+        "form.your_answer": "Ditt svar",
     ]
 
     private static let lang_th: [String: String] = [
@@ -2768,7 +3048,17 @@ enum DevReplyStrings {
         "push.channel": "คำตอบ",
         "a11y.unread": "ยังไม่ได้อ่าน: {count}",
         "home.new_reply": "คำตอบใหม่จาก {team}",
-        "home.new_conversation": "เริ่มการสนทนาใหม่",
+        "offer.label": "ข้อเสนอ",
+        "offer.opt_out": "ไม่ต้องส่งข้อเสนอให้ฉัน",
+        "offer.opted_out": "คุณจะไม่ได้รับข้อเสนออีก",
+        "offer.undo": "เลิกทำ",
+        "gift.label": "ของขวัญสำหรับคุณ",
+        "gift.open": "เปิดของขวัญ",
+        "gift.expired": "ของขวัญนี้หมดอายุแล้ว",
+        "form.send": "ส่งคำตอบ",
+        "form.required": "โปรดตอบคำถามนี้",
+        "form.pick_any": "เลือกได้หลายข้อ",
+        "form.your_answer": "คำตอบของคุณ",
     ]
 
     private static let lang_tr: [String: String] = [
@@ -2862,7 +3152,17 @@ enum DevReplyStrings {
         "push.channel": "Yanıtlar",
         "a11y.unread": "{count} okunmamış",
         "home.new_reply": "{team} ekibinden yeni yanıt",
-        "home.new_conversation": "Yeni bir sohbet başlat",
+        "offer.label": "Teklif",
+        "offer.opt_out": "Bana teklif gönderme",
+        "offer.opted_out": "Artık teklif almayacaksınız.",
+        "offer.undo": "Geri al",
+        "gift.label": "Sana bir hediye",
+        "gift.open": "Hediyeyi aç",
+        "gift.expired": "Bu hediyenin süresi doldu",
+        "form.send": "Yanıtları gönder",
+        "form.required": "Lütfen bu soruyu yanıtlayın.",
+        "form.pick_any": "İstediğini seç",
+        "form.your_answer": "Yanıtın",
     ]
 
     private static let lang_uk: [String: String] = [
@@ -2956,7 +3256,17 @@ enum DevReplyStrings {
         "push.channel": "Відповіді",
         "a11y.unread": "Непрочитані: {count}",
         "home.new_reply": "Нова відповідь від {team}",
-        "home.new_conversation": "Почати нову розмову",
+        "offer.label": "Пропозиція",
+        "offer.opt_out": "Не надсилати мені пропозиції",
+        "offer.opted_out": "Ви не отримуватимете пропозицій.",
+        "offer.undo": "Скасувати",
+        "gift.label": "Подарунок для вас",
+        "gift.open": "Відкрити подарунок",
+        "gift.expired": "Термін дії подарунка минув",
+        "form.send": "Надіслати відповіді",
+        "form.required": "Дайте відповідь на це питання.",
+        "form.pick_any": "Можна вибрати кілька",
+        "form.your_answer": "Ваша відповідь",
     ]
 
     private static let lang_vi: [String: String] = [
@@ -3050,7 +3360,17 @@ enum DevReplyStrings {
         "push.channel": "Phản hồi",
         "a11y.unread": "Chưa đọc: {count}",
         "home.new_reply": "Trả lời mới từ {team}",
-        "home.new_conversation": "Bắt đầu cuộc trò chuyện mới",
+        "offer.label": "Ưu đãi",
+        "offer.opt_out": "Đừng gửi ưu đãi cho tôi",
+        "offer.opted_out": "Bạn sẽ không nhận ưu đãi nữa.",
+        "offer.undo": "Hoàn tác",
+        "gift.label": "Một món quà cho bạn",
+        "gift.open": "Mở quà",
+        "gift.expired": "Món quà này đã hết hạn",
+        "form.send": "Gửi câu trả lời",
+        "form.required": "Vui lòng trả lời câu này.",
+        "form.pick_any": "Chọn tùy ý",
+        "form.your_answer": "Câu trả lời của bạn",
     ]
 
     private static let lang_zh_Hans: [String: String] = [
@@ -3144,7 +3464,17 @@ enum DevReplyStrings {
         "push.channel": "回复",
         "a11y.unread": "{count} 条未读",
         "home.new_reply": "{team} 的新回复",
-        "home.new_conversation": "开始新的对话",
+        "offer.label": "优惠",
+        "offer.opt_out": "不要给我发送优惠",
+        "offer.opted_out": "你将不会再收到优惠。",
+        "offer.undo": "撤销",
+        "gift.label": "送你一份礼物",
+        "gift.open": "打开礼物",
+        "gift.expired": "此礼物已过期",
+        "form.send": "发送回答",
+        "form.required": "请回答这个问题。",
+        "form.pick_any": "可多选",
+        "form.your_answer": "你的回答",
     ]
 
     private static let lang_zh_Hant: [String: String] = [
@@ -3238,6 +3568,16 @@ enum DevReplyStrings {
         "push.channel": "回覆",
         "a11y.unread": "未讀：{count}",
         "home.new_reply": "{team} 的新回覆",
-        "home.new_conversation": "開始新的對話",
+        "offer.label": "優惠",
+        "offer.opt_out": "不要傳送優惠給我",
+        "offer.opted_out": "你將不會再收到優惠。",
+        "offer.undo": "復原",
+        "gift.label": "送你一份禮物",
+        "gift.open": "打開禮物",
+        "gift.expired": "此禮物已過期",
+        "form.send": "傳送回答",
+        "form.required": "請回答這個問題。",
+        "form.pick_any": "可複選",
+        "form.your_answer": "你的回答",
     ]
 }

@@ -222,6 +222,7 @@ final class Messenger {
         conversations = []
         _ = L10n.shared // the device's language, and its changes, from now on
         config = Self.cachedConfig(for: publicKey) ?? .placeholder
+        LinkPolicy.appSchemes = config.linkSchemes
         _ = BrandFont.register
         // Deletions the server didn't confirm yet (`deleteUser` offline): with their own old tokens.
         Task { await retryPendingDeletions() }
@@ -311,6 +312,41 @@ final class Messenger {
         }
     }
 
+    /// The value being sent now: launch and becoming active come together, one PATCH is enough.
+    @ObservationIgnored private var sendingPushPermission: String?
+
+    /// The phone's notification permission (0.6), sent once per change and install: `PATCH /v1/install
+    /// {"push_permission"}`. The last value sent is remembered with a fingerprint of the install token, so a
+    /// new install (logout, a revoked token) gets it again.
+    func syncPushPermission(_ value: String) async {
+        guard client != nil, let account = keychainAccount, sendingPushPermission != value else { return }
+        let key = "devreply.push_permission.\(account)"
+        if let token = Keychain.token(for: account), UserDefaults.standard.string(forKey: key) == PushPermission.stored(value, token: token) {
+            return
+        }
+        sendingPushPermission = value
+        defer { sendingPushPermission = nil }
+        _ = try? await authorized { client, token in
+            // Already sent with this token (registration came meanwhile, or a call that got there first).
+            if UserDefaults.standard.string(forKey: key) == PushPermission.stored(value, token: token) { return }
+            try await client.updatePushPermission(token: token, permission: value)
+            UserDefaults.standard.set(PushPermission.stored(value, token: token), forKey: key)
+        }
+    }
+
+    /// "Don't send me offers" (0.6), or its Undo: shown at once, put back if the server refuses.
+    func setNoPromotions(_ value: Bool) async {
+        let before = profile?.noPromotions
+        profile?.noPromotions = value
+        do {
+            var updated = try await authorized { try await $0.updateNoPromotions(token: $1, value) }
+            if updated.noPromotions == nil { updated.noPromotions = value }
+            profile = updated
+        } catch {
+            profile?.noPromotions = before
+        }
+    }
+
     /// The app opened a DevReply link (`DevReply.handle`): tell the server, so Settings shows the deep link works.
     func reportDeepLinkOpened() {
         guard client != nil else { return }
@@ -331,6 +367,7 @@ final class Messenger {
                 // Switched off in the dashboard: an open messenger closes itself (MessengerView), the
                 // unread bubble hides (UnreadBubble).
                 self.config = c
+                LinkPolicy.appSchemes = c.linkSchemes
                 Self.cache(c, for: publicKey)
             }
             conversations = l

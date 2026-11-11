@@ -43,6 +43,10 @@ final class PushManager: NSObject {
     func refreshStatus(registerIfAllowed: Bool) async {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         status = settings.authorizationStatus
+        // The team sees whether replies can reach this phone (0.6): sent once per change.
+        if let value = PushPermission.value(for: status) {
+            Task { await Messenger.shared.syncPushPermission(value) }
+        }
         if registerIfAllowed, [.authorized, .provisional, .ephemeral].contains(status) {
             UIApplication.shared.registerForRemoteNotifications()
         }

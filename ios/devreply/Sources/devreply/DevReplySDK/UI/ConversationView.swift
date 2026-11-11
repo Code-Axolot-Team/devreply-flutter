@@ -66,6 +66,8 @@ final class ConversationModel {
         let attachments: [Staged]
         /// A tap on a button of a team question: the label goes as the text, this as `answer`.
         var answer: ButtonAnswer? = nil
+        /// Sent answers to a form (0.6): only this goes; `text` is their summary while it sends.
+        var formAnswer: FormAnswer? = nil
         var failure: String?
     }
 
@@ -130,6 +132,64 @@ final class ConversationModel {
         enqueue(item)
     }
 
+    // MARK: Forms, links and gifts (0.6)
+
+    /// What the user picked and typed in each form so far (form message id → question id → value). Kept here,
+    /// not in the card, so a card that scrolls out of view and back keeps it.
+    var formDrafts: [UUID: [String: FormValue]] = [:]
+    /// Required questions still unanswered after a tap on Send: each shows "Please answer this one."
+    private(set) var formMissing: [UUID: Set<String>] = [:]
+    /// Forms sent from here: shown answered at once, before the server has it.
+    private(set) var formSent: [UUID: [String: FormValue]] = [:]
+
+    /// Forms answered: form message id → answers. From the thread (the user's answer message carries
+    /// `form_answer`) and from sends in this session.
+    var formAnswers: [UUID: [String: FormValue]] {
+        var out = formSent
+        for message in messages where message.isFromUser {
+            if let answer = message.formAnswer { out[answer.messageId] = answer.answers }
+        }
+        return out
+    }
+
+    /// Send: required ones missing → marked, nothing sent. Otherwise the answers go once, in one message.
+    func submit(_ form: FormBlock, of message: Message) {
+        guard formAnswers[message.id] == nil else { return }
+        let answers = form.answers(from: formDrafts[message.id] ?? [:])
+        let missing = form.missing(in: answers)
+        formMissing[message.id] = Set(missing)
+        guard missing.isEmpty else { return }
+        formSent[message.id] = answers
+        let item = Pending(text: form.summary(of: answers), attachments: [],
+                           formAnswer: FormAnswer(messageId: message.id, answers: answers))
+        pending.append(item)
+        sentCount += 1
+        enqueue(item)
+    }
+
+    /// A picked option or typed text: a question marked missing stops being marked once answered.
+    func setDraft(_ value: FormValue?, question: String, form: UUID) {
+        formDrafts[form, default: [:]][question] = value
+        formMissing[form]?.remove(question)
+    }
+
+    /// A tap on a link button: reported (never waited for), then the URL to open. Nil = not allowed here.
+    func open(_ link: LinkButton, in message: Message) -> URL? {
+        guard let url = URL(string: link.url), LinkPolicy.isAllowed(url) else { return nil }
+        if let id = conversation?.id {
+            let messageID = message.id
+            Task { _ = try? await Messenger.shared.authorized { try await $0.linkTapped(token: $1, conversation: id, message: messageID, link: link.id) } }
+        }
+        return url
+    }
+
+    /// "Open gift": reported (never waited for), then the URL to open. Nil = expired or not allowed here.
+    func open(_ gift: Gift) -> URL? {
+        guard !gift.isExpired(), let url = URL(string: gift.url), LinkPolicy.isAllowed(url) else { return nil }
+        Task { _ = try? await Messenger.shared.authorized { try await $0.giftOpened(token: $1, gift: gift.id) } }
+        return url
+    }
+
     func send(_ raw: String, attachments: [Staged]) {
         let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty || !attachments.isEmpty else { return }
@@ -165,7 +225,14 @@ final class ConversationModel {
                 ids.append(try await Messenger.shared.authorized { try await $0.upload(token: $1, attachment: attachment) })
             }
             let attachmentIDs = ids
-            if let id = conversation?.id {
+            if let id = conversation?.id, let formAnswer = item.formAnswer {
+                let message = try await Messenger.shared.authorized {
+                    try await $0.sendFormAnswer(token: $1, conversation: id, answer: formAnswer)
+                }
+                receive(message)
+                Messenger.shared.saw(message.id)
+                Messenger.shared.messageSent(conversationID: id)
+            } else if let id = conversation?.id {
                 let answer = item.answer
                 let message = try await Messenger.shared.authorized {
                     try await $0.sendMessage(token: $1, conversation: id, text: item.text, attachments: attachmentIDs, answer: answer)
@@ -189,10 +256,11 @@ final class ConversationModel {
                 Messenger.shared.conversationStarted(started.conversation.id, category: category)
             }
             pending.removeAll { $0.id == item.id }
-        } catch DevReplyError.server(409) where item.answer != nil {
+        } catch DevReplyError.server(409) where item.answer != nil || item.formAnswer != nil {
             // Already answered (another device, or a tap that got there first): the thread says which.
             pending.removeAll { $0.id == item.id }
             if let question = item.answer?.messageId { tapped[question] = nil }
+            if let form = item.formAnswer?.messageId { formSent[form] = nil }
             await load()
         } catch {
             let reason = switch error as? DevReplyError {
@@ -226,22 +294,18 @@ struct ConversationView: View {
     @State private var emailAskDone = false
     /// Restarts the profile's retries from the start (Retry, back in the app).
     @State private var profileAttempt = 0
-    /// Continued from a topic's tile on home: "Start a new conversation" in that topic (0.5.1).
-    private let startNew: (() -> Void)?
     private var messenger: Messenger { Messenger.shared }
     private var config: MessengerConfig { messenger.config }
     private var palette: Palette { Palette.active }
 
-    init(existing: Conversation, startNew: (() -> Void)? = nil) {
+    init(existing: Conversation) {
         _model = State(initialValue: ConversationModel(existing: existing, category: nil))
         _startedHere = State(initialValue: false)
-        self.startNew = startNew
     }
 
     init(newIn category: DevReplyCategory?) {
         _model = State(initialValue: ConversationModel(existing: nil, category: category))
         _startedHere = State(initialValue: true)
-        startNew = nil
     }
 
     private var hasEmail: Bool { !(messenger.profile?.email ?? "").trimmingCharacters(in: .whitespaces).isEmpty }
@@ -275,7 +339,6 @@ struct ConversationView: View {
                 NameForm()
             } else {
                 VStack(spacing: 0) {
-                    if let startNew { NewConversationLink(action: startNew) }
                     // One card at a time: the email ask first, then notifications.
                     if showsEmailAsk {
                         EmailAskCard { withAnimation(.snappy) { emailAskDone = true } }
@@ -450,7 +513,7 @@ struct ConversationView: View {
         case .time(let date, _):
             TimeLabel(date: date)
         case .message(let message):
-            MessageView(message: message, teamName: config.teamName, answered: model.answers[message.id], onOpenImage: { image in
+            MessageView(message: message, teamName: config.teamName, answered: model.answers[message.id], model: model, onOpenImage: { image in
                 // A full-screen cover hides the messenger for a moment: that isn't it closing.
                 messenger.isCovered = true
                 viewing = image
@@ -649,33 +712,6 @@ private struct ProfileWait: View {
     }
 }
 
-/// Above the message box of a conversation continued from a topic's tile: a fresh one in that topic (0.5.1).
-private struct NewConversationLink: View {
-    let action: () -> Void
-    private var palette: Palette { Palette.active }
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Image(systemName: "plus")
-                    .font(.system(size: 13, weight: .black))
-                    .accessibilityHidden(true)
-                Text(t("home.new_conversation"))
-                    .font(.text(14, .bold, relativeTo: .footnote))
-                    .underline()
-            }
-            .foregroundStyle(palette.ink)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .frame(maxWidth: .infinity, alignment: .trailing)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .background(palette.background)
-        .accessibilityIdentifier("devreply.new_conversation")
-    }
-}
-
 // MARK: - Name first (spec 05)
 
 /// Asked once, before the first message, unless the host app passed a name with `DevReply.setUser`.
@@ -813,6 +849,8 @@ private struct MessageView: View {
     let teamName: String
     /// For a button question: the chosen option's id, once answered.
     let answered: String?
+    /// Forms, link buttons and gifts (0.6) act through the conversation.
+    let model: ConversationModel
     let onOpenImage: (ViewedImage) -> Void
     let onOpenFile: (RemoteFile) -> Void
     let onAnswer: (ButtonOption) -> Void
@@ -833,6 +871,7 @@ private struct MessageView: View {
 
     private var bubbles: some View {
         Row(fromUser: message.isFromUser, teamName: teamName, showsAvatar: message.persona == nil) {
+            if message.promotional { Kicker(text: t("offer.label"), inverted: true).accessibilityIdentifier("devreply.offer.label") }
             ForEach(Array(message.blocks.enumerated()), id: \.offset) { _, block in
                 switch block {
                 case .text(let text):
@@ -862,12 +901,25 @@ private struct MessageView: View {
                         MarkdownBubble(blocks: question)
                         OptionButtons(options: options, chosen: answered, onChoose: onAnswer)
                     }
+                case .links(let intro, let plain, let links):
+                    if message.isFromUser {
+                        TextBubble(text: plain, fromUser: true)
+                    } else {
+                        if !intro.isEmpty { MarkdownBubble(blocks: intro) }
+                        LinkButtons(links: links) { model.open($0, in: message) }
+                    }
+                case .gift(let gift):
+                    GiftCard(gift: gift) { model.open(gift) }
+                case .form(let form):
+                    if !form.intro.isEmpty { MarkdownBubble(blocks: form.intro) }
+                    FormCard(form: form, message: message, model: model)
                 case .localized:
                     TextBubble(text: block.plainText, fromUser: message.isFromUser)
                 case .unsupported(let fallback):
                     TextBubble(text: fallback, fromUser: message.isFromUser, muted: true)
                 }
             }
+            if message.promotional { OfferOptOut() }
         }
     }
 }
